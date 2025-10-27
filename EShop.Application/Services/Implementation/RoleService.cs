@@ -1,4 +1,5 @@
 ﻿using EShop.Application.Services.Interface;
+using EShop.Application.Utilities;
 using EShop.Domain.Entities.Account.Role;
 using EShop.Domain.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -20,16 +21,25 @@ public class RoleService : IRoleService
 
     public async Task<string> GetRoleNameByRoleId(long roleId)
     {
-        var role = await _roleRepository
-            .GetQuery()
-            .SingleOrDefaultAsync(x => x.Id == roleId && !x.IsDelete);
-
-        if (role != null)
+        try
         {
-            return role.RoleName;
-        }
+            var role = await _roleRepository
+           .GetQuery()
+           .SingleOrDefaultAsync(x => x.Id == roleId && !x.IsDelete);
 
-        return null;
+            if (role != null)
+            {
+                return role.RoleName;
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
 
     #region Dispose

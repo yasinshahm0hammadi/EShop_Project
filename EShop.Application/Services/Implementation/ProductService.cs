@@ -31,76 +31,85 @@ namespace EShop.Application.Services.Implementation
 
         public async Task<FilterProductDto> FilterProducts(FilterProductDto product)
         {
-            var query = _productRepository
+            try
+            {
+                var query = _productRepository
                 .GetQuery()
                 .AsQueryable();
 
-            #region Product State
+                #region Product State
 
-            switch (product.ProductState)
-            {
-                case FilterProductState.All:
-                    break;
-                case FilterProductState.Active:
-                    query = query.Where(x => x.IsActive);
-                    break;
-                case FilterProductState.NotActive:
-                    query = query.Where(x => !x.IsActive);
-                    break;
+                switch (product.ProductState)
+                {
+                    case FilterProductState.All:
+                        break;
+                    case FilterProductState.Active:
+                        query = query.Where(x => x.IsActive);
+                        break;
+                    case FilterProductState.NotActive:
+                        query = query.Where(x => !x.IsActive);
+                        break;
+                }
+
+                #endregion
+
+                #region Product Order
+
+                switch (product.OrderBy)
+                {
+                    case FilterProductOrderBy.CreateDateDescending:
+                        query = query.OrderByDescending(x => x.CreateDate);
+                        break;
+                    case FilterProductOrderBy.PriceAscending:
+                        query = query.OrderBy(x => x.Price);
+                        break;
+                    case FilterProductOrderBy.PriceDescending:
+                        query = query.OrderByDescending(x => x.Price);
+                        break;
+                    case FilterProductOrderBy.ViewDescending:
+                        query = query.OrderByDescending(x => x.ViewCount);
+                        break;
+                    case FilterProductOrderBy.SellDescending:
+                        query = query.OrderByDescending(x => x.SellCount);
+                        break;
+                    case FilterProductOrderBy.SellAscending:
+                        query = query.OrderBy(x => x.SellCount);
+                        break;
+                    case FilterProductOrderBy.CreateDateAscending:
+                        query = query.OrderBy(x => x.CreateDate);
+                        break;
+                }
+
+                #endregion
+
+                #region Filter Products
+
+                if (!string.IsNullOrWhiteSpace(product.ProductTitle))
+                {
+                    query = query.Where(x => EF.Functions.Like(x.Title, $"%{product.ProductTitle}%"));
+                }
+
+                #endregion
+
+                #region Product Paging
+
+                var productCount = await query.CountAsync();
+
+                var pager = Pager.Build(product.PageId, productCount, product.TakeEntity,
+                    product.HowManyShowPageAfterAndBefore);
+
+                var allEntities = await query.Paging(pager).ToListAsync();
+
+                #endregion
+
+                return product.SetPaging(pager).SetProduct(allEntities);
             }
+            catch (Exception ex)
+            { 
+                Logger.ShowError(ex);
 
-            #endregion
-
-            #region Product Order
-
-            switch (product.OrderBy)
-            {
-                case FilterProductOrderBy.CreateDateDescending:
-                    query = query.OrderByDescending(x => x.CreateDate);
-                    break;
-                case FilterProductOrderBy.PriceAscending:
-                    query = query.OrderBy(x => x.Price);
-                    break;
-                case FilterProductOrderBy.PriceDescending:
-                    query = query.OrderByDescending(x => x.Price);
-                    break;
-                case FilterProductOrderBy.ViewDescending:
-                    query = query.OrderByDescending(x => x.ViewCount);
-                    break;
-                case FilterProductOrderBy.SellDescending:
-                    query = query.OrderByDescending(x => x.SellCount);
-                    break;
-                case FilterProductOrderBy.SellAscending:
-                    query = query.OrderBy(x => x.SellCount);
-                    break;
-                case FilterProductOrderBy.CreateDateAscending:
-                    query = query.OrderBy(x => x.CreateDate);
-                    break;
+                return new FilterProductDto();
             }
-
-            #endregion
-
-            #region Filter Products
-
-            if (!string.IsNullOrWhiteSpace(product.ProductTitle))
-            {
-                query = query.Where(x => EF.Functions.Like(x.Title, $"%{product.ProductTitle}%"));
-            }
-
-            #endregion
-
-            #region Product Paging
-
-            var productCount = await query.CountAsync();
-
-            var pager = Pager.Build(product.PageId, productCount, product.TakeEntity,
-                product.HowManyShowPageAfterAndBefore);
-
-            var allEntities = await query.Paging(pager).ToListAsync();
-
-            #endregion
-
-            return product.SetPaging(pager).SetProduct(allEntities);
         }
         public async Task<CreateProductResult> CreateProduct(CreateProductDto product)
         {
@@ -145,39 +154,50 @@ namespace EShop.Application.Services.Implementation
 
                 return CreateProductResult.Success;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return CreateProductResult.Error;
             }
         }
         public async Task<EditProductDto> GetProductForEdit(long id)
         {
-            var existingProduct = await _productRepository
+            try
+            {
+                var existingProduct = await _productRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            var selectedCategories = await _productSelectedCategoryRepository
-                .GetQuery()
-                .Where(x => x.ProductId == id)
-                .Select(x => x.ProductCategoryId)
-                .ToListAsync();
+                var selectedCategories = await _productSelectedCategoryRepository
+                    .GetQuery()
+                    .Where(x => x.ProductId == id)
+                    .Select(x => x.ProductCategoryId)
+                    .ToListAsync();
 
-            if (existingProduct != null)
-            {
-                return new EditProductDto
+                if (existingProduct != null)
                 {
-                    Id = id,
-                    Title = existingProduct.Title,
-                    ShortDescription = existingProduct.ShortDescription,
-                    Description = existingProduct.Description,
-                    Price = existingProduct.Price,
-                    ImageFileName = existingProduct.Image,
-                    SelectedCategories = selectedCategories,
-                    IsActive = existingProduct.IsActive,
-                };
-            }
+                    return new EditProductDto
+                    {
+                        Id = id,
+                        Title = existingProduct.Title,
+                        ShortDescription = existingProduct.ShortDescription,
+                        Description = existingProduct.Description,
+                        Price = existingProduct.Price,
+                        ImageFileName = existingProduct.Image,
+                        SelectedCategories = selectedCategories,
+                        IsActive = existingProduct.IsActive,
+                    };
+                }
 
-            return null;
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new EditProductDto();
+            }
         }
         public async Task<EditProductResult> EditProduct(EditProductDto product, string editorName)
         {
@@ -229,48 +249,68 @@ namespace EShop.Application.Services.Implementation
 
                 return EditProductResult.NotFound;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return EditProductResult.Error;
             }
         }
         public async Task<bool> ActivateProduct(long id)
         {
-            var product = await _productRepository
-                .GetQuery()
-                .SingleOrDefaultAsync(x => x.Id == id);
-
-            if (product != null)
+            try
             {
-                product.IsActive = true;
-                product.IsDelete = false;
+                var product = await _productRepository
+               .GetQuery()
+               .SingleOrDefaultAsync(x => x.Id == id);
 
-                _productRepository.EditEntity(product);
-                await _productRepository.SaveChanges();
+                if (product != null)
+                {
+                    product.IsActive = true;
+                    product.IsDelete = false;
 
-                return true;
+                    _productRepository.EditEntity(product);
+                    await _productRepository.SaveChanges();
+
+                    return true;
+                }
+
+                return false;
             }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
 
-            return false;
+                return false;
+            }
         }
         public async Task<bool> DeActivateProduct(long id)
         {
-            var product = await _productRepository
+            try
+            {
+                var product = await _productRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            if (product != null)
-            {
-                product.IsActive = false;
-                product.IsDelete = true;
+                if (product != null)
+                {
+                    product.IsActive = false;
+                    product.IsDelete = true;
 
-                _productRepository.EditEntity(product);
-                await _productRepository.SaveChanges();
+                    _productRepository.EditEntity(product);
+                    await _productRepository.SaveChanges();
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
 
-            return false;
+                return false;
+            }
         }
 
         #endregion
@@ -279,33 +319,42 @@ namespace EShop.Application.Services.Implementation
 
         public async Task<FilterProductCategoriesDto> FilterProductCategories(FilterProductCategoriesDto productCategory)
         {
-            var query = _productCategoryRepository
+            try
+            {
+                var query = _productCategoryRepository
             .GetQuery()
             .Where(x => x.ParentId == productCategory.ParentId)
             .Include(x => x.ProductSelectedCategories)
             .AsQueryable();
 
-            #region Filter
+                #region Filter
 
-            if (!string.IsNullOrWhiteSpace(productCategory.Title))
-            {
-                query = query.Where(x => EF.Functions.Like(x.Title, $"%{productCategory.Title}%")).OrderByDescending(x => x.CreateDate);
+                if (!string.IsNullOrWhiteSpace(productCategory.Title))
+                {
+                    query = query.Where(x => EF.Functions.Like(x.Title, $"%{productCategory.Title}%")).OrderByDescending(x => x.CreateDate);
+                }
+
+                #endregion
+
+                #region Paging
+
+                var productCategoryCount = await query.CountAsync();
+
+                var pager = Pager.Build(productCategory.PageId, productCategoryCount, productCategory.TakeEntity,
+                    productCategory.HowManyShowPageAfterAndBefore);
+
+                var allEntities = await query.Paging(pager).ToListAsync();
+
+                #endregion
+
+                return productCategory.SetPaging(pager).SetProductCategory(allEntities);
             }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
 
-            #endregion
-
-            #region Paging
-
-            var productCategoryCount = await query.CountAsync();
-
-            var pager = Pager.Build(productCategory.PageId, productCategoryCount, productCategory.TakeEntity,
-                productCategory.HowManyShowPageAfterAndBefore);
-
-            var allEntities = await query.Paging(pager).ToListAsync();
-
-            #endregion
-
-            return productCategory.SetPaging(pager).SetProductCategory(allEntities);
+                return new FilterProductCategoriesDto();
+            }
         }
         public async Task<List<ProductCategory>> GetAllActiveProductCategories()
         {

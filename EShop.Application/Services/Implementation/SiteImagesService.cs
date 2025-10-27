@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography.X509Certificates;
 using EShop.Domain.DTOs.Site.Banner;
 using EShop.Domain.DTOs.Site.Silder;
+using System.Net.Http.Headers;
 
 namespace EShop.Application.Services.Implementation
 {
@@ -32,18 +33,36 @@ namespace EShop.Application.Services.Implementation
 
         public async Task<List<Slider>> GetAllSlides()
         {
-            return await _sliderRepository
+            try
+            {
+                return await _sliderRepository
                 .GetQuery()
                 .OrderByDescending(x => x.CreateDate)
                 .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<Slider>();
+            }
         }
         public async Task<List<Slider>> GetAllActiveSlides()
         {
-            return await _sliderRepository
+            try
+            {
+                return await _sliderRepository
                 .GetQuery()
                 .Where(x => x.IsActive && !x.IsDelete)
                 .OrderByDescending(x => x.CreateDate)
                 .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<Slider>();
+            }
         }
         public async Task<CreateSliderResult> CreateSlide(CreateSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage)
         {
@@ -87,26 +106,37 @@ namespace EShop.Application.Services.Implementation
 
                 return CreateSliderResult.Success;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return CreateSliderResult.Error;
             }
         }
         public async Task<EditSliderDto> GetSlideForEdit(long id)
         {
-            var slide = await _sliderRepository
+            try
+            {
+                var slide = await _sliderRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            if (slide == null) return null;
+                if (slide == null) return null;
 
-            return new EditSliderDto
+                return new EditSliderDto
+                {
+                    Id = slide.Id,
+                    Link = slide.Link,
+                    Description = slide.Description,
+                    IsActive = slide.IsActive,
+                };
+            }
+            catch (Exception ex)
             {
-                Id = slide.Id,
-                Link = slide.Link,
-                Description = slide.Description,
-                IsActive = slide.IsActive,
-            };
+                Logger.ShowError(ex);
+
+                return new EditSliderDto();
+            }
         }
         public async Task<EditSliderResult> EditSlide(EditSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage, string editorName)
         {
@@ -152,8 +182,10 @@ namespace EShop.Application.Services.Implementation
 
                 return EditSliderResult.Success;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return EditSliderResult.Error;
             }
         }
@@ -174,8 +206,10 @@ namespace EShop.Application.Services.Implementation
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return false;
             }
         }
@@ -196,8 +230,10 @@ namespace EShop.Application.Services.Implementation
 
                 return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return false;
             }
         }
@@ -208,16 +244,34 @@ namespace EShop.Application.Services.Implementation
 
         public async Task<List<SiteBanner>> GetSiteBannersByPlacement(SiteBannerPlacement placement)
         {
-            return await _siteBannerRepository
+            try
+            {
+                return await _siteBannerRepository
                 .GetQuery()
                 .Where(x => x.Placement == placement && !x.IsDelete)
                 .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<SiteBanner>();
+            }
         }
         public async Task<List<SiteBanner>> GetAllBanners()
         {
-            return await _siteBannerRepository
+            try
+            {
+                return await _siteBannerRepository
                 .GetQuery()
                 .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<SiteBanner>();
+            }
         }
         public async Task<CreateSiteBannerResult> CreateSiteBanner(CreateSiteBannerDto banner, IFormFile bannerImage)
         {
@@ -248,30 +302,41 @@ namespace EShop.Application.Services.Implementation
 
                 return CreateSiteBannerResult.Success;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return CreateSiteBannerResult.Error;
             }
         }
         public async Task<EditSiteBannerDto> GetSiteBannerForEdit(long id)
         {
-            var existingSiteBanner = await _siteBannerRepository
+            try
+            {
+                var existingSiteBanner = await _siteBannerRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            if (existingSiteBanner != null)
-            {
-                return new EditSiteBannerDto
+                if (existingSiteBanner != null)
                 {
-                    Id = existingSiteBanner.Id,
-                    Placement = existingSiteBanner.Placement,
-                    Description = existingSiteBanner.Description,
-                    Link = existingSiteBanner.Link,
-                    GridColumnSize = existingSiteBanner.GridColumnSize
-                };
-            }
+                    return new EditSiteBannerDto
+                    {
+                        Id = existingSiteBanner.Id,
+                        Placement = existingSiteBanner.Placement,
+                        Description = existingSiteBanner.Description,
+                        Link = existingSiteBanner.Link,
+                        GridColumnSize = existingSiteBanner.GridColumnSize
+                    };
+                }
 
-            return null;
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new EditSiteBannerDto();
+            }
         }
         public async Task<EditSiteBannerResult> EditSiteBanner(EditSiteBannerDto banner, IFormFile bannerImage, string editorName)
         {
@@ -308,46 +373,66 @@ namespace EShop.Application.Services.Implementation
 
                 return EditSiteBannerResult.NotFound;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+                Logger.ShowError(ex);
+
                 return EditSiteBannerResult.Error;
             }
         }
         public async Task<bool> ActivateSiteBanner(long id)
         {
-            var siteBanner = await _siteBannerRepository
+            try
+            {
+                var siteBanner = await _siteBannerRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            if (siteBanner != null)
-            {
-                siteBanner.IsDelete = false;
+                if (siteBanner != null)
+                {
+                    siteBanner.IsDelete = false;
 
-                _siteBannerRepository.EditEntity(siteBanner);
-                await _siteBannerRepository.SaveChanges();
+                    _siteBannerRepository.EditEntity(siteBanner);
+                    await _siteBannerRepository.SaveChanges();
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
 
-            return false;
+                return false;
+            }
         }
         public async Task<bool> DeActivateSiteBanner(long id)
         {
-            var siteBanner = await _siteBannerRepository
+            try
+            {
+                var siteBanner = await _siteBannerRepository
                 .GetQuery()
                 .SingleOrDefaultAsync(x => x.Id == id);
 
-            if (siteBanner != null)
-            {
-                siteBanner.IsDelete = true;
+                if (siteBanner != null)
+                {
+                    siteBanner.IsDelete = true;
 
-                _siteBannerRepository.EditEntity(siteBanner);
-                await _siteBannerRepository.SaveChanges();
+                    _siteBannerRepository.EditEntity(siteBanner);
+                    await _siteBannerRepository.SaveChanges();
 
-                return true;
+                    return true;
+                }
+
+                return false;
             }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
 
-            return false;
+                return false;
+            }
         }
 
 

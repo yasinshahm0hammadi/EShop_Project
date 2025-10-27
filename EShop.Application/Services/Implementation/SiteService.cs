@@ -32,48 +32,66 @@ public class SiteService : ISiteService
 
     public async Task<SiteSettingDto> GetDefaultSiteSetting()
     {
-        var siteSetting = await _siteSettingRepository
-            .GetQuery()
-            .Select(x => new SiteSettingDto
-            {
-                SiteName = x.SiteName,
-                FooterText = x.FooterText,
-                Email = x.Email,
-                Phone = x.Phone,
-                Mobile = x.Mobile,
-                CopyRight = x.CopyRight,
-                Address = x.Address,
-                MapScript = x.MapScript,
-                IsDefault = x.IsDefault,
-                CreateDate = x.CreateDate.ToStringShamsiDate(),
-                LastUpdateDate = x.LastUpdateDate.ToStringShamsiDate()
-            }).FirstOrDefaultAsync(x => x.IsDefault);
+        try
+        {
+            var siteSetting = await _siteSettingRepository
+           .GetQuery()
+           .Select(x => new SiteSettingDto
+           {
+               SiteName = x.SiteName,
+               FooterText = x.FooterText,
+               Email = x.Email,
+               Phone = x.Phone,
+               Mobile = x.Mobile,
+               CopyRight = x.CopyRight,
+               Address = x.Address,
+               MapScript = x.MapScript,
+               IsDefault = x.IsDefault,
+               CreateDate = x.CreateDate.ToStringShamsiDate(),
+               LastUpdateDate = x.LastUpdateDate.ToStringShamsiDate()
+           }).FirstOrDefaultAsync(x => x.IsDefault);
 
-        return siteSetting ?? new SiteSettingDto();
+            return siteSetting ?? new SiteSettingDto();
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new SiteSettingDto();
+        }
     }
     public async Task<EditSiteSettingDto> GetSiteSettingForEdit(long settingId)
     {
-        var setting = await _siteSettingRepository.GetEntityById(settingId);
-
-        if (setting != null)
+        try
         {
-            return new EditSiteSettingDto
-            {
-                Id = setting.Id,
-                SiteName = setting.SiteName,
-                IsDefault = setting.IsDefault,
-                Address = setting.Address,
-                CopyRight = setting.CopyRight,
-                Email = setting.Email,
-                FooterText = setting.FooterText,
-                MapScript = setting.MapScript,
-                Mobile = setting.Mobile,
-                Phone = setting.Phone,
-                
-            };
-        }
+            var setting = await _siteSettingRepository.GetEntityById(settingId);
 
-        return null;
+            if (setting != null)
+            {
+                return new EditSiteSettingDto
+                {
+                    Id = setting.Id,
+                    SiteName = setting.SiteName,
+                    IsDefault = setting.IsDefault,
+                    Address = setting.Address,
+                    CopyRight = setting.CopyRight,
+                    Email = setting.Email,
+                    FooterText = setting.FooterText,
+                    MapScript = setting.MapScript,
+                    Mobile = setting.Mobile,
+                    Phone = setting.Phone,
+
+                };
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new EditSiteSettingDto();
+        }
     }
     public async Task<EditSiteSettingResult> EditSiteSetting(EditSiteSettingDto newSetting, string userName)
     {
@@ -102,8 +120,10 @@ public class SiteService : ISiteService
 
             return EditSiteSettingResult.NotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return EditSiteSettingResult.Error;
         }
     }
@@ -114,7 +134,9 @@ public class SiteService : ISiteService
 
     public async Task<List<AboutUsDto>> GetAboutUs()
     {
-        return await _aboutUsRepository
+        try
+        {
+            return await _aboutUsRepository
             .GetQuery()
             .Where(x => !x.IsDelete)
             .Select(x => new AboutUsDto
@@ -126,6 +148,13 @@ public class SiteService : ISiteService
                 LastUpdateDate = x.LastUpdateDate.ToStringShamsiDate()
             }).OrderByDescending(x => x.Id)
             .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new List<AboutUsDto>();
+        }
     }
     public async Task<CreateAboutUsResult> CreateAboutUs(CreateAboutUsDto about)
     {
@@ -142,26 +171,37 @@ public class SiteService : ISiteService
 
             return CreateAboutUsResult.Success;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return CreateAboutUsResult.Error;
         }
     }
     public async Task<EditAboutUsDto> GetAboutUsForEdit(long aboutId)
     {
-        var aboutUs = await _aboutUsRepository.GetEntityById(aboutId);
-
-        if (aboutUs == null)
+        try
         {
-            return null;
+            var aboutUs = await _aboutUsRepository.GetEntityById(aboutId);
+
+            if (aboutUs == null)
+            {
+                return null;
+            }
+
+            return new EditAboutUsDto
+            {
+                Id = aboutUs.Id,
+                HeaderTitle = aboutUs.HeaderTitle,
+                Description = aboutUs.Description
+            };
         }
-
-        return new EditAboutUsDto
+        catch (Exception ex)
         {
-            Id = aboutUs.Id,
-            HeaderTitle = aboutUs.HeaderTitle,
-            Description = aboutUs.Description
-        };
+            Logger.ShowError(ex);
+
+            return new EditAboutUsDto();
+        }
     }
     public async Task<EditAboutUsResult> EditAboutUs(EditAboutUsDto about, string userName)
     {
@@ -183,8 +223,10 @@ public class SiteService : ISiteService
 
             return EditAboutUsResult.NotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return EditAboutUsResult.Error;
         }
     }
@@ -194,7 +236,9 @@ public class SiteService : ISiteService
 
     public async Task<List<FeatureDto>> GetAllFeatures()
     {
-        return await _featureRepository
+        try
+        {
+            return await _featureRepository
             .GetQuery()
             .Where(x => !x.IsDelete)
             .Select(x => new FeatureDto
@@ -204,6 +248,13 @@ public class SiteService : ISiteService
                 Image = x.Image,
             }).OrderByDescending(x => x.Id)
             .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new List<FeatureDto>();
+        }
     }
 
     #endregion
@@ -212,7 +263,9 @@ public class SiteService : ISiteService
 
     public async Task<List<QuestionDto>> GetAllQuestions()
     {
-        return await _questionRepository
+        try
+        {
+            return await _questionRepository
             .GetQuery()
             .Where(x => !x.IsDelete)
             .Select(x => new QuestionDto
@@ -222,6 +275,13 @@ public class SiteService : ISiteService
                 Answer = x.Answer
             }).OrderByDescending(x => x.Id)
             .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new List<QuestionDto>();
+        }
     }
 
     #endregion

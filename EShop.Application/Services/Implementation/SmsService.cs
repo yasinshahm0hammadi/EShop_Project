@@ -1,4 +1,5 @@
 ﻿using EShop.Application.Services.Interface;
+using EShop.Application.Utilities;
 using Microsoft.Extensions.Configuration;
 
 namespace EShop.Application.Services.Implementation;
@@ -22,10 +23,17 @@ public class SmsService : ISmsService
 
     public async Task SendVerificationSms(string mobile, string activationCode)
     {
-        var apiKey = _configuration.GetSection("KavenegarSmsApiKey")["apiKey"];
-        var api = new Kavenegar.KavenegarApi(apiKey);
+        try
+        {
+            var apiKey = _configuration.GetSection("KavenegarSmsApiKey")["apiKey"];
+            var api = new Kavenegar.KavenegarApi(apiKey);
 
-        await api.VerifyLookup(mobile, activationCode, "VerifyWebsiteAccount");
+            await api.VerifyLookup(mobile, activationCode, "VerifyWebsiteAccount");
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+        }
     }
 
     #endregion
@@ -34,10 +42,17 @@ public class SmsService : ISmsService
 
     public async Task SendRestorePasswordSms(string mobile, string newPassword)
     {
-        var apiKey = _configuration.GetSection("KavenegarSmsApiKey")["apiKey"];
-        var api = new Kavenegar.KavenegarApi(apiKey);
+        try
+        {
+            var apiKey = _configuration.GetSection("KavenegarSmsApiKey")["apiKey"];
+            var api = new Kavenegar.KavenegarApi(apiKey);
 
-        await api.VerifyLookup(mobile, newPassword, "VerifyRecoverPassword");
+            await api.VerifyLookup(mobile, newPassword, "VerifyRecoverPassword");
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+        }
     }
 
     #endregion

@@ -9,6 +9,7 @@ using EShop.Domain.Entities.Account.User;
 using EShop.Domain.Repository.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Headers;
 
 namespace EShop.Application.Services.Implementation;
 
@@ -39,24 +40,33 @@ public class UserService : IUserService
     #region User Validation
     public async Task<UserValidationResult> IsUserValidate(UserValidationDto validate)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Mobile == validate.Mobile);
 
-        if (user != null)
-        {
-            if (user.IsMobileActive)
+            if (user != null)
             {
-                return UserValidationResult.ExistAndActive;
+                if (user.IsMobileActive)
+                {
+                    return UserValidationResult.ExistAndActive;
+                }
+
+                await _smsService.SendVerificationSms(validate.Mobile, user.MobileActiveCode);
+
+
+                return UserValidationResult.ExistAndNotActive;
             }
 
-            await _smsService.SendVerificationSms(validate.Mobile, user.MobileActiveCode);
-
-
-            return UserValidationResult.ExistAndNotActive;
+            return UserValidationResult.NotExists;
         }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
 
-        return UserValidationResult.NotExists;
+            return UserValidationResult.Error;
+        }
     }
 
     #endregion
@@ -92,23 +102,34 @@ public class UserService : IUserService
 
             return UserRegisterResult.MobileExists;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return UserRegisterResult.Error;
         }
     }
     public async Task<bool> IsUserExistByMobile(string mobile)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Mobile == mobile);
 
-        if (user != null)
-        {
-            return true;
-        }
+            if (user != null)
+            {
+                return true;
+            }
 
-        return false;
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return false;
+        }
     }
 
     #endregion
@@ -142,26 +163,46 @@ public class UserService : IUserService
 
             return UserLoginResult.UserNotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return UserLoginResult.Error;
         }
     }
     public async Task<User> GetUserByMobile(string mobile)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Mobile == mobile);
 
-        return user;
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
     public async Task<User> GetUserById(long id)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == id);
 
-        return user;
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
 
     #endregion
@@ -170,23 +211,30 @@ public class UserService : IUserService
 
     public async Task<bool> ActivateMobile(ActivateMobileDto activateMobile)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Mobile == activateMobile.Mobile);
 
-        if (user != null)
-        {
-            if (activateMobile.MobileActiveCode == user.MobileActiveCode)
+            if (user != null)
             {
-                user.IsMobileActive = true;
-                user.MobileActiveCode = new Random().Next(100000, 9999999).ToString();
-                await _userRepository.SaveChanges();
+                if (activateMobile.MobileActiveCode == user.MobileActiveCode)
+                {
+                    user.IsMobileActive = true;
+                    user.MobileActiveCode = new Random().Next(100000, 9999999).ToString();
+                    await _userRepository.SaveChanges();
 
-                return true;
+                    return true;
+                }
             }
-        }
 
-        return false;
+            return false;
+        }
+        catch (Exception ex)
+        {
+            return false;
+        }
     }
 
     #endregion
@@ -222,8 +270,10 @@ public class UserService : IUserService
 
             return ForgotPasswordResult.UserNotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return ForgotPasswordResult.Error;
         }
     }
@@ -234,25 +284,34 @@ public class UserService : IUserService
 
     public async Task<ReadUserProfileDto> GetUserProfile(long userId)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == userId && !x.IsDelete);
 
-        if (user != null)
-        {
-            return new ReadUserProfileDto
+            if (user != null)
             {
-                Id = user.Id,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Mobile = user.Mobile,
-                Email = user.Email,
-                AvatarPath = user.AvatarPath,
-                RegisterDate = user.CreateDate.ToStringShamsiDate()
-            };
-        }
+                return new ReadUserProfileDto
+                {
+                    Id = user.Id,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Mobile = user.Mobile,
+                    Email = user.Email,
+                    AvatarPath = user.AvatarPath,
+                    RegisterDate = user.CreateDate.ToStringShamsiDate()
+                };
+            }
 
-        return null;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
 
     #endregion
@@ -261,20 +320,29 @@ public class UserService : IUserService
 
     public async Task<UpdateUserProfileDto> GetUserProfileForEdit(long userId)
     {
-        var user = await _userRepository.GetEntityById(userId);
-
-        if (user != null)
+        try
         {
-            return new UpdateUserProfileDto
-            {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Mobile = user.Mobile,
-                Email = user.Email,
-            };
-        }
+            var user = await _userRepository.GetEntityById(userId);
 
-        return null;
+            if (user != null)
+            {
+                return new UpdateUserProfileDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Mobile = user.Mobile,
+                    Email = user.Email,
+                };
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
     public async Task<UpdateUserProfileResult> EditUserProfile(UpdateUserProfileDto profile, long userId, IFormFile? avatar)
     {
@@ -304,8 +372,10 @@ public class UserService : IUserService
 
             return UpdateUserProfileResult.Success;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return UpdateUserProfileResult.Error;
         }
     }
@@ -316,58 +386,85 @@ public class UserService : IUserService
 
     public async Task<ChangeUserPasswordResult> ChangeUserPassword(ChangeUserPasswordDto changePassword, long userId)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
 
-        if (user == null)
-        {
-            return ChangeUserPasswordResult.NotFound;
+            if (user == null)
+            {
+                return ChangeUserPasswordResult.NotFound;
+            }
+
+            if (user.Password != PasswordManager.HashPassword(changePassword.CurrentPassword, user.Salt))
+            {
+                return ChangeUserPasswordResult.WrongCurrentPassword;
+            }
+
+            if (changePassword.NewPassword == user.Password)
+            {
+                return ChangeUserPasswordResult.CurrentPasswordSameAsNew;
+            }
+
+            user.Password = PasswordManager.HashPassword(changePassword.NewPassword, user.Salt);
+
+            _userRepository.EditEntity(user);
+            await _userRepository.SaveChanges();
+
+            return ChangeUserPasswordResult.Success;
         }
-
-        if (user.Password != PasswordManager.HashPassword(changePassword.CurrentPassword, user.Salt))
+        catch (Exception ex)
         {
-            return ChangeUserPasswordResult.WrongCurrentPassword;
+            Logger.ShowError(ex);
+
+            return ChangeUserPasswordResult.Error;
         }
-
-        if (changePassword.NewPassword == user.Password)
-        {
-            return ChangeUserPasswordResult.CurrentPasswordSameAsNew;
-        }
-
-        user.Password = PasswordManager.HashPassword(changePassword.NewPassword, user.Salt);
-
-        _userRepository.EditEntity(user);
-        await _userRepository.SaveChanges();
-
-        return ChangeUserPasswordResult.Success;
     }
     public async Task<string> GetUserFullNameById(long userId)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
 
-        if (user != null)
-        {
-            return (user.FirstName + " " + user.LastName);
-        }
+            if (user != null)
+            {
+                return (user.FirstName + " " + user.LastName);
+            }
 
-        return "Not Found";
+            return "Not Found";
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return "Not Found";
+        }
     }
     public async Task<string> GetUserMobileById(long userId)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .AsQueryable()
             .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
 
-        if (user != null)
-        {
-            return user.Mobile;
-        }
+            if (user != null)
+            {
+                return user.Mobile;
+            }
 
-        return null;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return null;
+        }
     }
 
     #endregion
@@ -376,72 +473,90 @@ public class UserService : IUserService
 
     public async Task<FilterUserDto> FilterUsers(FilterUserDto user)
     {
-        var query = _userRepository
+        try
+        {
+            var query = _userRepository
             .GetQuery()
             .Include(x => x.Role)
             .AsQueryable();
 
-        #region Filter
+            #region Filter
 
-        if (user.RoleId > 0)
-        {
-            query = query.Where(x => x.RoleId == user.RoleId);
+            if (user.RoleId > 0)
+            {
+                query = query.Where(x => x.RoleId == user.RoleId);
+            }
+            if (!string.IsNullOrEmpty(user.FirstName))
+            {
+                query = query.Where(x => EF.Functions.Like(x.FirstName, $"%{user.FirstName}%"));
+            }
+            if (!string.IsNullOrEmpty(user.LastName))
+            {
+                query = query.Where(x => EF.Functions.Like(x.LastName, $"%{user.LastName}%"));
+            }
+            if (!string.IsNullOrEmpty(user.Mobile))
+            {
+                query = query.Where(x => EF.Functions.Like(x.Mobile, $"%{user.Mobile}%"));
+            }
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                query = query.Where(x => EF.Functions.Like(x.Email, $"%{user.Email}%"));
+            }
+
+            #endregion
+
+            #region Paging
+
+            var userCount = await query.CountAsync();
+
+            var pager = Pager.Build(user.PageId, userCount, user.TakeEntity,
+                user.HowManyShowPageAfterAndBefore);
+
+            var allEntities = await query.Paging(pager).OrderByDescending(x => x.Id).ToListAsync();
+
+            #endregion
+
+            return user.SetPaging(pager).SetUsers(allEntities);
         }
-        if (!string.IsNullOrEmpty(user.FirstName))
+        catch (Exception ex)
         {
-            query = query.Where(x => EF.Functions.Like(x.FirstName, $"%{user.FirstName}%"));
+            Logger.ShowError(ex);
+
+            return new FilterUserDto();
         }
-        if (!string.IsNullOrEmpty(user.LastName))
-        {
-            query = query.Where(x => EF.Functions.Like(x.LastName, $"%{user.LastName}%"));
-        }
-        if (!string.IsNullOrEmpty(user.Mobile))
-        {
-            query = query.Where(x => EF.Functions.Like(x.Mobile, $"%{user.Mobile}%"));
-        }
-        if (!string.IsNullOrEmpty(user.Email))
-        {
-            query = query.Where(x => EF.Functions.Like(x.Email, $"%{user.Email}%"));
-        }
-
-        #endregion
-
-        #region Paging
-
-        var userCount = await query.CountAsync();
-
-        var pager = Pager.Build(user.PageId, userCount, user.TakeEntity,
-            user.HowManyShowPageAfterAndBefore);
-
-        var allEntities = await query.Paging(pager).OrderByDescending(x => x.Id).ToListAsync();
-
-        #endregion
-
-        return user.SetPaging(pager).SetUsers(allEntities);
     }
     public async Task<EditUserDto> GetUserForEdit(long userId)
     {
-        var existingUser = await _userRepository
+        try
+        {
+            var existingUser = await _userRepository
             .GetQuery()
             .Include(x => x.Role)
             .SingleOrDefaultAsync(x => x.Id == userId);
 
-        if (existingUser != null)
-        {
-            return new EditUserDto
+            if (existingUser != null)
             {
-                Id = existingUser.Id,
-                RoleId = existingUser.Role.Id,
-                FirstName = existingUser.FirstName,
-                LastName = existingUser.LastName,
-                Mobile = existingUser.Mobile,
-                Email = existingUser.Email,
-                IsMobileActivated = existingUser.IsMobileActive,
-                IsBlocked = existingUser.IsBlocked
-            };
-        }
+                return new EditUserDto
+                {
+                    Id = existingUser.Id,
+                    RoleId = existingUser.Role.Id,
+                    FirstName = existingUser.FirstName,
+                    LastName = existingUser.LastName,
+                    Mobile = existingUser.Mobile,
+                    Email = existingUser.Email,
+                    IsMobileActivated = existingUser.IsMobileActive,
+                    IsBlocked = existingUser.IsBlocked
+                };
+            }
 
-        return null;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new EditUserDto();
+        }
     }
     public async Task<EditUserResult> EditUser(EditUserDto user, string editorName)
     {
@@ -471,8 +586,10 @@ public class UserService : IUserService
 
             return EditUserResult.UserNotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return EditUserResult.Error;
         }
     }
@@ -485,44 +602,62 @@ public class UserService : IUserService
 
     public async Task<string> GetUserRole(long userId)
     {
-        var user = await _userRepository
+        try
+        {
+            var user = await _userRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == userId);
 
-        if (user != null)
-        {
-            return await _roleService.GetRoleNameByRoleId(user.RoleId);
-        }
+            if (user != null)
+            {
+                return await _roleService.GetRoleNameByRoleId(user.RoleId);
+            }
 
-        return null;
+            return "Not Found";
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return "Not Found";
+        }
     }
     public async Task<FilterRoleDto> FilterRoles(FilterRoleDto role)
     {
-        var query = _roleRepository
+        try
+        {
+            var query = _roleRepository
             .GetQuery()
             .Include(x => x.Users);
 
-        #region Filter
+            #region Filter
 
-        if (Equals(!string.IsNullOrEmpty(role.RoleName)))
-        {
-            query.Where(x => EF.Functions.Like(x.RoleName, $"%{role.RoleName}%"));
+            if (Equals(!string.IsNullOrEmpty(role.RoleName)))
+            {
+                query.Where(x => EF.Functions.Like(x.RoleName, $"%{role.RoleName}%"));
+            }
+
+            #endregion
+
+            #region Paging
+
+            var roleCount = await query.CountAsync();
+
+            var pager = Pager.Build(role.PageId, roleCount, role.TakeEntity,
+                role.HowManyShowPageAfterAndBefore);
+
+            var allEntities = await query.Paging(pager).ToListAsync();
+
+            #endregion
+
+            return role.SetPaging(pager).SetRoles(allEntities);
         }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
 
-        #endregion
-
-        #region Paging
-
-        var roleCount = await query.CountAsync();
-
-        var pager = Pager.Build(role.PageId, roleCount, role.TakeEntity,
-            role.HowManyShowPageAfterAndBefore);
-
-        var allEntities = await query.Paging(pager).ToListAsync();
-
-        #endregion
-
-        return role.SetPaging(pager).SetRoles(allEntities);
+            return new FilterRoleDto();
+        }
     }
     public async Task<CreateRoleResult> CreateRole(CreateRoleDto role)
     {
@@ -538,27 +673,38 @@ public class UserService : IUserService
 
             return CreateRoleResult.Success;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return CreateRoleResult.Error;
         }
     }
     public async Task<EditRoleDto> GetRoleForEdit(long roleId)
     {
-        var existingRole = await _roleRepository
+        try
+        {
+            var existingRole = await _roleRepository
             .GetQuery()
             .SingleOrDefaultAsync(x => x.Id == roleId);
 
-        if (existingRole != null)
-        {
-            return new EditRoleDto
+            if (existingRole != null)
             {
-                Id = existingRole.Id,
-                RoleName = existingRole.RoleName
-            };
-        }
+                return new EditRoleDto
+                {
+                    Id = existingRole.Id,
+                    RoleName = existingRole.RoleName
+                };
+            }
 
-        return null;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new EditRoleDto();
+        }
     }
     public async Task<EditRoleResult> EditRole(EditRoleDto role, string editorName)
     {
@@ -581,20 +727,32 @@ public class UserService : IUserService
 
             return EditRoleResult.NotFound;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
+            Logger.ShowError(ex);
+
             return EditRoleResult.Error;
         }
     }
     public async Task<List<Role>> GetRoles()
     {
-        return await _roleRepository
+        try
+        {
+            return await _roleRepository
             .GetQuery()
             .Select(x => new Role
             {
                 Id = x.Id,
                 RoleName = x.RoleName
             }).ToListAsync();
+
+        }
+        catch (Exception ex)
+        {
+            Logger.ShowError(ex);
+
+            return new List<Role>();
+        }
     }
 
     #endregion

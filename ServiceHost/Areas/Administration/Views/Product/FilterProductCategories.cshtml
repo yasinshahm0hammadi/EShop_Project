@@ -29,7 +29,7 @@
                 </div>
                 <!-- .nk-block-between -->
             </div>
-            @if (Model.ProductCategories.Any())
+            @if (Model.ProductCategories is not null && Model.ProductCategories.Any())
             {
                 <!-- .nk-block-head -->
                 <div class="nk-block nk-block-lg">
