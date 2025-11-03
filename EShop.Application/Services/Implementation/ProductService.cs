@@ -256,6 +256,60 @@ namespace EShop.Application.Services.Implementation
                 return EditProductResult.Error;
             }
         }
+        public async Task<List<Product>> GetProductsWithMaximumView(int take)
+        {
+            try
+            {
+                var maxViewedProducts = await _productRepository
+                .GetQuery()
+                .Where(x => x.IsDelete && x.IsActive)
+                .OrderByDescending(x => x.ViewCount)
+                .Skip(0)
+                .Take(take)
+                .Distinct()
+                .ToListAsync();
+
+                if (maxViewedProducts.Count > take)
+                {
+                    maxViewedProducts.Skip(take - 1).Take(1).ToList();
+                }
+
+                return maxViewedProducts;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<Product>();
+            }
+        }
+        public async Task<List<Product>> GetLatestArrivalProducts(int take)
+        {
+            try
+            {
+                var latestArrivalProducts = await _productRepository
+                .GetQuery()
+                .Where(x => x.IsActive && !x.IsDelete)
+                .OrderByDescending(x => x.ViewCount)
+                .Skip(0)
+                .Take(take)
+                .Distinct()
+                .ToListAsync();
+
+                if (latestArrivalProducts.Count > take)
+                {
+                    latestArrivalProducts.Skip(14).Take(1).ToList();
+                }
+
+                return latestArrivalProducts;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<Product>();
+            }
+        }
         public async Task<bool> ActivateProduct(long id)
         {
             try
@@ -511,27 +565,41 @@ namespace EShop.Application.Services.Implementation
 
         public async Task AddProductSelectedCategories(long productId, List<long> productSelectedCategoriesId)
         {
-            var productSelectedCategories = new List<ProductSelectedCategory>();
-
-            foreach (var categoryId in productSelectedCategoriesId)
+            try
             {
-                productSelectedCategories.Add(new ProductSelectedCategory
-                {
-                    ProductCategoryId = categoryId,
-                    ProductId = productId
-                });
-            }
+                var productSelectedCategories = new List<ProductSelectedCategory>();
 
-            await _productSelectedCategoryRepository.AddRangeEntity(productSelectedCategories);
+                foreach (var categoryId in productSelectedCategoriesId)
+                {
+                    productSelectedCategories.Add(new ProductSelectedCategory
+                    {
+                        ProductCategoryId = categoryId,
+                        ProductId = productId
+                    });
+                }
+
+                await _productSelectedCategoryRepository.AddRangeEntity(productSelectedCategories);
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+            }
         }
         public async Task RemoveProductSelectedCategories(long productId)
         {
-            var productSelectedCategories = await _productSelectedCategoryRepository
+            try
+            {
+                var productSelectedCategories = await _productSelectedCategoryRepository
                 .GetQuery()
                 .Where(x => x.Id == productId)
                 .ToListAsync();
 
-            _productSelectedCategoryRepository.DeletePermanentEntities(productSelectedCategories);
+                _productSelectedCategoryRepository.DeletePermanentEntities(productSelectedCategories);
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+            }
         }
 
         #endregion

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EShop.Domain.Migrations
 {
-    [DbContext(typeof(DatabaseContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250916201842_Add_ProductCategory_Entity_and_Change_BaseEntity")]
     partial class Add_ProductCategory_Entity_and_Change_BaseEntity
     {

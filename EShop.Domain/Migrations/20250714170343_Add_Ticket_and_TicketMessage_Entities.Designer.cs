@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EShop.Domain.Migrations
 {
-    [DbContext(typeof(DatabaseContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250714170343_Add_Ticket_and_TicketMessage_Entities")]
     partial class Add_Ticket_and_TicketMessage_Entities
     {

@@ -9,14 +9,14 @@ public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEnt
 {
     #region Fields
 
-    private readonly DatabaseContext _context;
+    private readonly ApplicationDbContext _context;
     private readonly DbSet<TEntity> _dbSet;
 
     #endregion
 
     #region Conctructor
 
-    public GenericRepository(DatabaseContext context)
+    public GenericRepository(ApplicationDbContext context)
     {
         _context = context;
         _dbSet = context.Set<TEntity>();

@@ -1,4 +1,5 @@
 ﻿@using EShop.Application.Utilities
+@using EShop.Domain.Entities.Site
 @model List<EShop.Domain.Entities.Site.SiteBanner>
 
 @{
@@ -63,6 +64,26 @@
                                                         else
                                                         {
                                                             <span class="badge bg-danger">غیرفعال</span>
+                                                        }
+
+                                                        @if (banner.Placement == SiteBannerPlacement.FirstPlace)
+                                                        {
+                                                            <span class="badge bg-black text-white">جایگاه اول</span>
+                                                        }
+                                                        
+                                                        @if (banner.Placement == SiteBannerPlacement.SecondPlace)
+                                                        {
+                                                            <span class="badge bg-black text-white">جایگاه دوم</span>
+                                                        }
+                                                        
+                                                        @if (banner.Placement == SiteBannerPlacement.ThirdPlace)
+                                                        {
+                                                            <span class="badge bg-black text-white">جایگاه سوم</span>
+                                                        }
+
+                                                        @if (banner.Placement == SiteBannerPlacement.FourthPlace)
+                                                        {
+                                                            <span class="badge bg-black text-white">جایگاه چهارم</span>
                                                         }
                                                     </span>
                                                 </div>

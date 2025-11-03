@@ -12,6 +12,8 @@ namespace EShop.Application.Services.Interface
         Task<CreateProductResult> CreateProduct(CreateProductDto product);
         Task<EditProductDto> GetProductForEdit(long id);
         Task<EditProductResult> EditProduct(EditProductDto product, string editorName);
+        Task<List<Product>> GetProductsWithMaximumView(int take);
+        Task<List<Product>> GetLatestArrivalProducts(int take);
         Task<bool> ActivateProduct(long id);
         Task<bool> DeActivateProduct(long id);
 

@@ -26,7 +26,7 @@ builder.Services.RegisterService();
 
 var connectionString = builder.Configuration.GetConnectionString("EShop_Project");
 
-builder.Services.AddDbContext<DatabaseContext>(option =>
+builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(connectionString), ServiceLifetime.Transient);
 
 

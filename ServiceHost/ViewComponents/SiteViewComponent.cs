@@ -136,4 +136,24 @@ namespace ServiceHost.ViewComponents
     }
 
     #endregion
+
+    #region Latest Arrival Products Section
+
+    public class LatestArrivalProductsViewComponent : ViewComponent
+    {
+        private readonly IProductService _productService;
+
+        public LatestArrivalProductsViewComponent(IProductService productService)
+        {
+            _productService = productService;
+        }
+
+        public async Task<IViewComponentResult> InvokeAsync()
+        {
+            var latestArrivalProducts = await _productService.GetLatestArrivalProducts(15);
+            return View("LatestArrivalProducts", latestArrivalProducts);
+        }
+    }
+
+    #endregion
 }

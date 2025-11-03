@@ -1,14 +1,15 @@
 ﻿@using EShop.Application.EntitiesExtentions
+@using static Microsoft.EntityFrameworkCore.DbLoggerCategory
 @model List<EShop.Domain.Entities.Site.SiteBanner>
 
 
-@if (Model != null && Model.Any())
-{
-    <section class="banner">
-        <div class="container-fluid">
-            <!-- Adding a heading for SEO purposes, but hiding it visually -->
-            <h2 class="section-title visually-hidden">بنر های تبلیغاتی</h2> <!-- Hidden from view but present for SEO -->
-            <div class="row">
+<section class="banner">
+    <div class="container-fluid">
+        <!-- Adding a heading for SEO purposes, but hiding it visually -->
+        <h2 class="section-title visually-hidden">بنر های تبلیغاتی</h2> <!-- Hidden from view but present for SEO -->
+        <div class="row">
+            @if (Model is not null)
+            {
                 @foreach (var banner in Model)
                 {
                     <div class="col-lg-@((int)banner.GridColumnSize)">
@@ -24,17 +25,11 @@
                         </a>
                     </div>
                 }
-            </div>
+            }
+            else
+            {
+                <partial name="NoItemFound" />
+            }
         </div>
-    </section>
-}
-else
-{
-    <section class="banner">
-        <div class="container-fluid">
-            <!-- Adding a heading for SEO purposes, but hiding it visually -->
-            <h2 class="section-title visually-hidden">بنر های تبلیغاتی</h2> <!-- Hidden from view but present for SEO -->
-            <partial name="NoItemFound" />
-        </div>
-    </section>
-}
+    </div>
+</section>

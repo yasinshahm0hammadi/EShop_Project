@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EShop.Domain.Migrations
 {
-    [DbContext(typeof(DatabaseContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250604200208_Apply_The_Changes_Of_User_Entity_Part_Two")]
     partial class Apply_The_Changes_Of_User_Entity_Part_Two
     {

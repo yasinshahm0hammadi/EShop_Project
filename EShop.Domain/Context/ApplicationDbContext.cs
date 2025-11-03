@@ -8,9 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Domain.Context;
 
-public class DatabaseContext : DbContext
+public class ApplicationDbContext : DbContext
 {
-    public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     #region Account
 

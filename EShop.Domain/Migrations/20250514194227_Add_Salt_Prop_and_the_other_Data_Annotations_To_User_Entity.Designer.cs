@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EShop.Domain.Migrations
 {
-    [DbContext(typeof(DatabaseContext))]
+    [DbContext(typeof(ApplicationDbContext))]
     [Migration("20250514194227_Add_Salt_Prop_and_the_other_Data_Annotations_To_User_Entity")]
     partial class Add_Salt_Prop_and_the_other_Data_Annotations_To_User_Entity
     {

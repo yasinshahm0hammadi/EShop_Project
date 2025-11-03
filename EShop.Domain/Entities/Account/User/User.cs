@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using EShop.Domain.Entities.Common;
 using EShop.Domain.Entities.Contact;
-using Microsoft.AspNetCore.Http;
 
 namespace EShop.Domain.Entities.Account.User;
 
