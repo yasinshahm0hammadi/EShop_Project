@@ -1,5 +1,6 @@
 ﻿using EShop.Domain.DTOs.Product;
 using EShop.Domain.DTOs.Product.ProductCategory;
+using EShop.Domain.DTOs.Product.ProductColor;
 using EShop.Domain.Entities.Product;
 
 namespace EShop.Application.Services.Interface
@@ -28,6 +29,15 @@ namespace EShop.Application.Services.Interface
         Task<EditProductCategoryResult> EditProductCategory(EditProductCategoryDto productCategory, string editorName);
         Task<bool> ActivateProductCategory(long id);
         Task<bool> DeActivateProductCategory(long id);
+
+        #endregion
+
+        #region Product Color
+
+        Task<List<FilterProductColorDto>> FilterProductColors(long productId);
+        Task<CreateProductColorResult> CreateProductColor(CreateProductColorDto color, long productId);
+        Task<EditProductColorDto> GetProductColorForEdit(long colorId);
+        Task<EditProductColorResult> EditProductColor(EditProductColorDto color, long colorId);
 
         #endregion
     }

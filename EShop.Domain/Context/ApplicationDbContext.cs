@@ -68,6 +68,12 @@ public class ApplicationDbContext : DbContext
 
     #endregion
 
+    #region Product Color
+
+    public DbSet<ProductColor> ProductColors { get; set; }
+
+    #endregion
+
     #endregion
 
     #region OnModelCreating

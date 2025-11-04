@@ -1,6 +1,7 @@
 ﻿using EShop.Application.Services.Interface;
 using EShop.Domain.DTOs.Product;
 using EShop.Domain.DTOs.Product.ProductCategory;
+using EShop.Domain.DTOs.Product.ProductColor;
 using Microsoft.AspNetCore.Mvc;
 using ServiceHost.PresentationExtensions;
 
@@ -92,7 +93,7 @@ namespace ServiceHost.Areas.Administration.Controllers
                 switch (result)
                 {
                     case EditProductResult.Success:
-                        TempData[SuccessMessage] = "دسته بندی محصول موردنظر با ویرایش ایجاد شد.";
+                        TempData[SuccessMessage] = "محصول موردنظر با ویرایش ایجاد شد.";
                         return RedirectToAction("FilterProducts", "Product", new { area = "Administration" });
                     case EditProductResult.NotFound:
                         TempData[WarningMessage] = "محصول موردنظر یافت نشد";
@@ -140,6 +141,8 @@ namespace ServiceHost.Areas.Administration.Controllers
             }
             return RedirectToAction("FilterProducts", "Product", new { area = "Administration" });
         }
+
+        #endregion
 
         #endregion
 
@@ -354,6 +357,95 @@ namespace ServiceHost.Areas.Administration.Controllers
         }
 
         #endregion
+
+        #endregion
+
+        #region Product Color
+
+        #region Product Color Lisr
+
+        [HttpGet("FilterProductColors/{productId}")]
+        public async Task<IActionResult> FilterProductColors(long productId)
+        {
+            ViewBag.ProductId = productId;
+            var productColors = await _productService.FilterProductColors(productId);
+            return View(productColors);
+        }
+
+        #endregion
+
+        #region Create Product
+
+        [HttpGet("CreateProductColor/{productId}")]
+        public async Task<IActionResult> CreateProductColor()
+        {
+            return View();
+        }
+
+
+        [HttpPost("CreateProductColor/{productId}"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateProductColor(CreateProductColorDto newProductColor, long productId)
+        {
+                var result = await _productService.CreateProductColor(newProductColor, productId);
+
+                switch (result)
+                {
+                    case CreateProductColorResult.Success:
+                        TempData[SuccessMessage] = "رنگ محصول جدید با موفقیت ایجاد شد.";
+                        return RedirectToAction("FilterProductColors", "Product", new { area = "Administration", ProductId = productId});
+                       break;
+                    case CreateProductColorResult.Error:
+                        TempData[ErrorMessage] = "فرایند ایجاد رنگ محصول با خطا مواجه شد، لطفا بعدا امتحان کنید.";
+                        break;
+                    case CreateProductColorResult.ProductNotFound:
+                        TempData[WarningMessage] = "هیچ محصولی با این مشخصات یافت نشد.";
+                        break;
+                    case CreateProductColorResult.DuplicateColor:
+                        TempData[WarningMessage] = "رنگ تکراری می باشد";
+                        break;
+
+                }
+
+            return View(newProductColor);
+        }
+
+        #endregion
+
+        #region Edit Product
+
+        [HttpGet("EditProductColor/{productId}")]
+        public async Task<IActionResult> EditProductColor(long productId)
+        {
+            var product = await _productService.GetProductColorForEdit(productId);
+            return View(product);
+        }
+
+        [HttpPost("EditProductColor/{productId}"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProductColor(EditProductColorDto productColor, long productId)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _productService.EditProductColor(productColor, productId);
+
+                switch (result)
+                {
+                    case EditProductColorResult.Success:
+                        TempData[SuccessMessage] = "رنگ محصول موردنظر با ویرایش ایجاد شد.";
+                        return RedirectToAction("FilterProducts", "Product", new { area = "Administration" });
+                    case EditProductColorResult.ColorNotFound:
+                        TempData[WarningMessage] = "رنگ محصول موردنظر یافت نشد";
+                        break;
+                    case EditProductColorResult.Error:
+                        TempData[ErrorMessage] = "در فرایند ویرایش رنگ محصول موردنظر خطایی رخ داد، لطفا بعدا تلاش کنید.";
+                        break;
+                    case EditProductColorResult.DuplicateColor:
+                        TempData[ErrorMessage] = "رنگ تکراری می باشد.";
+                        break;
+                }
+            }
+
+            return View(productColor);
+        }
 
         #endregion
 
