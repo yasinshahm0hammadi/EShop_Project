@@ -50,7 +50,7 @@ public class ContactService : IContactService
                 MessageText = contact.MessageText,
             };
 
-            await _contactRepository.AddEntity(newMessage);
+            await _contactRepository.AddEntity(newMessage, null);
             await _contactRepository.SaveChanges();
         }
         catch (Exception ex)
@@ -71,11 +71,11 @@ public class ContactService : IContactService
 
             if (!string.IsNullOrWhiteSpace(message.Fullname))
             {
-                query = query.Where(x => EF.Functions.Like(x.Email, $"%{message.Fullname}%")).OrderByDescending(x => x.CreateDate);
+                query = query.Where(x => EF.Functions.Like(x.Email, $"%{message.Fullname}%")).OrderByDescending(x => x.CreatedAt);
             }
             if (!string.IsNullOrWhiteSpace(message.Email))
             {
-                query = query.Where(x => EF.Functions.Like(x.Email, $"%{message.Email}%")).OrderByDescending(x => x.CreateDate);
+                query = query.Where(x => EF.Functions.Like(x.Email, $"%{message.Email}%")).OrderByDescending(x => x.CreatedAt);
             }
 
             #endregion
@@ -105,7 +105,7 @@ public class ContactService : IContactService
 
     #region Ticket
 
-    public async Task<AddTicketResult> AddUserTicket(AddTicketDto ticket, long userId)
+    public async Task<AddTicketResult> AddUserTicket(AddTicketDto ticket, long userId, string? creatorName)
     {
         try
         {
@@ -124,7 +124,7 @@ public class ContactService : IContactService
                 TicketState = TicketState.UnderProgress
             };
 
-            await _ticketRepository.AddEntity(newTicket);
+            await _ticketRepository.AddEntity(newTicket, creatorName);
             await _ticketRepository.SaveChanges();
 
             var newTicketMessage = new TicketMessage
@@ -134,7 +134,7 @@ public class ContactService : IContactService
                 Text = ticket.Text
             };
 
-            await _ticketMessageRepository.AddEntity(newTicketMessage);
+            await _ticketMessageRepository.AddEntity(newTicketMessage, creatorName);
             await _ticketMessageRepository.SaveChanges();
 
             return AddTicketResult.Success;
@@ -154,14 +154,14 @@ public class ContactService : IContactService
             .GetQuery()
             .AsQueryable()
             .Include(x => x.Owner)
-            .Where(x => !x.IsDelete);
+            .Where(x => !x.IsPublished);
 
             #region State
 
             switch (ticket.TicketState)
             {
                 case TicketState.All:
-                    query = query.Where(x => !x.IsDelete);
+                    query = query.Where(x => !x.IsPublished);
                     break;
                 case TicketState.UnderProgress:
                     query = query.Where(x => x.TicketState == TicketState.UnderProgress);
@@ -177,10 +177,10 @@ public class ContactService : IContactService
             switch (ticket.OrderBy)
             {
                 case FilterTicketOrder.CreateDateDescending:
-                    query = query.OrderByDescending(x => x.CreateDate);
+                    query = query.OrderByDescending(x => x.CreatedAt);
                     break;
                 case FilterTicketOrder.CreateDateAscending:
-                    query = query.OrderBy(x => x.CreateDate);
+                    query = query.OrderBy(x => x.CreatedAt);
                     break;
             }
 
@@ -242,16 +242,16 @@ public class ContactService : IContactService
             var ticket = await _ticketRepository
             .GetQuery()
             .Include(x => x.Owner)
-            .OrderByDescending(x => x.CreateDate)
-            .SingleOrDefaultAsync(x => x.Id == ticketId && !x.IsDelete);
+            .OrderByDescending(x => x.CreatedAt)
+            .SingleOrDefaultAsync(x => x.Id == ticketId && !x.IsPublished);
 
             var ticketMessage = await _ticketMessageRepository
                 .GetQuery()
                 .Include(x => x.Sender)
                 .Include(x => x.Ticket)
                 .ThenInclude(x => x.Owner)
-                .Where(x => x.TicketId == ticketId && !x.IsDelete)
-                .OrderBy(x => x.CreateDate)
+                .Where(x => x.TicketId == ticketId && !x.IsPublished)
+                .OrderBy(x => x.CreatedAt)
                 .ToListAsync();
 
             if (ticket == null || ticket.OwnerId != userId)
@@ -282,7 +282,7 @@ public class ContactService : IContactService
             .Include(x => x.Owner)
             .Include(x => x.TicketMessages)
             .ThenInclude(x => x.Sender)
-            .FirstOrDefaultAsync(t => t.Id == ticketId && !t.IsDelete);
+            .FirstOrDefaultAsync(t => t.Id == ticketId && !t.IsPublished);
 
             if (ticket == null)
                 return ("Not Found", "Not Found");
@@ -305,7 +305,7 @@ public class ContactService : IContactService
             return (null, null);
         }
     }
-    public async Task<AnswerTicketResult> OwnerAnswerTicket(AnswerTicketDto answer, long userId)
+    public async Task<AnswerTicketResult> OwnerAnswerTicket(AnswerTicketDto answer, long userId, string? creatorName)
     {
         try
         {
@@ -323,7 +323,7 @@ public class ContactService : IContactService
                 Text = answer.Text
             };
 
-            await _ticketMessageRepository.AddEntity(ticketMessage);
+            await _ticketMessageRepository.AddEntity(ticketMessage, creatorName);
             await _ticketMessageRepository.SaveChanges();
 
             ticket.IsReadByOwner = true;
@@ -340,7 +340,7 @@ public class ContactService : IContactService
             return AnswerTicketResult.Error;
         }
     }
-    public async Task<AnswerTicketResult> AdminAnswerTicket(AnswerTicketDto answer, long userId)
+    public async Task<AnswerTicketResult> AdminAnswerTicket(AnswerTicketDto answer, long userId, string? creatorName)
     {
         try
         {
@@ -358,7 +358,7 @@ public class ContactService : IContactService
                 Text = answer.Text
             };
 
-            await _ticketMessageRepository.AddEntity(ticketMessage);
+            await _ticketMessageRepository.AddEntity(ticketMessage, creatorName);
             await _ticketMessageRepository.SaveChanges();
 
             ticket.IsReadByOwner = false;

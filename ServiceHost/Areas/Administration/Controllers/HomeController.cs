@@ -103,7 +103,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _siteService.CreateAboutUs(about);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _siteService.CreateAboutUs(about, creatorName);
 
                 if (result == CreateAboutUsResult.Success)
                 {

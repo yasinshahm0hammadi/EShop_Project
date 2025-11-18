@@ -1,10 +1,5 @@
 ﻿using EShop.Domain.Entities.Common;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EShop.Domain.Entities.Product
 {
@@ -51,6 +46,7 @@ namespace EShop.Domain.Entities.Product
 
         public ICollection<ProductSelectedCategory> ProductSelectedCategories { get; set; }
         public ICollection<ProductColor> ProductColors { get; set; }
+        public ICollection<ProductFeature> PruductFeatures { get; set; }
 
         #endregion
     }

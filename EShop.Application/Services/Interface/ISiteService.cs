@@ -9,16 +9,16 @@ public interface ISiteService : IAsyncDisposable
 
     Task<SiteSettingDto> GetDefaultSiteSetting();
     Task<EditSiteSettingDto> GetSiteSettingForEdit(long settingId);
-    Task<EditSiteSettingResult> EditSiteSetting(EditSiteSettingDto newSetting, string userName);
+    Task<EditSiteSettingResult> EditSiteSetting(EditSiteSettingDto newSetting, string? modifierName);
 
     #endregion
 
     #region AboutUs
 
     Task<List<AboutUsDto>> GetAboutUs();
-    Task<CreateAboutUsResult> CreateAboutUs(CreateAboutUsDto about);
+    Task<CreateAboutUsResult> CreateAboutUs(CreateAboutUsDto about, string? creatorName);
     Task<EditAboutUsDto> GetAboutUsForEdit(long aboutId);
-    Task<EditAboutUsResult> EditAboutUs(EditAboutUsDto about, string userName);
+    Task<EditAboutUsResult> EditAboutUs(EditAboutUsDto about, string? modifierName);
 
     #region Features
 

@@ -94,7 +94,7 @@ public class UserService : IUserService
 
                 await _smsService.SendVerificationSms(register.Mobile, newUser.MobileActiveCode);
 
-                await _userRepository.AddEntity(newUser);
+                await _userRepository.AddEntity(newUser, null);
                 await _userRepository.SaveChanges();
 
                 return UserRegisterResult.Success;
@@ -142,7 +142,7 @@ public class UserService : IUserService
         {
             var user = await _userRepository
                 .GetQuery()
-                .SingleOrDefaultAsync(x => x.Mobile == login.Mobile && !x.IsBlocked && !x.IsDelete);
+                .SingleOrDefaultAsync(x => x.Mobile == login.Mobile && !x.IsBlocked && !x.IsPublished);
 
             if (await IsUserExistByMobile(login.Mobile))
             {
@@ -259,7 +259,7 @@ public class UserService : IUserService
                 var newPassword = PasswordManager.CreateRandomPassword();
                 user.Password = PasswordManager.HashPassword(newPassword, user.Salt);
 
-                _userRepository.EditEntity(user);
+                _userRepository.EditEntity(user, null);
 
                 await _smsService.SendRestorePasswordSms(forgot.Mobile, newPassword);
 
@@ -288,7 +288,7 @@ public class UserService : IUserService
         {
             var user = await _userRepository
             .GetQuery()
-            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsDelete);
+            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsPublished);
 
             if (user != null)
             {
@@ -300,7 +300,7 @@ public class UserService : IUserService
                     Mobile = user.Mobile,
                     Email = user.Email,
                     AvatarPath = user.AvatarPath,
-                    RegisterDate = user.CreateDate.ToStringShamsiDate()
+                    RegisterDate = user.CreatedAt.ToString()
                 };
             }
 
@@ -344,7 +344,7 @@ public class UserService : IUserService
             return null;
         }
     }
-    public async Task<UpdateUserProfileResult> EditUserProfile(UpdateUserProfileDto profile, long userId, IFormFile? avatar)
+    public async Task<UpdateUserProfileResult> EditUserProfile(UpdateUserProfileDto profile, long userId, IFormFile? avatar, string? modifierName)
     {
         try
         {
@@ -367,7 +367,7 @@ public class UserService : IUserService
                 user.AvatarPath = imageName;
             }
 
-            _userRepository.EditEntity(user);
+            _userRepository.EditEntity(user, modifierName);
             await _userRepository.SaveChanges();
 
             return UpdateUserProfileResult.Success;
@@ -384,13 +384,13 @@ public class UserService : IUserService
 
     #region Change User Password
 
-    public async Task<ChangeUserPasswordResult> ChangeUserPassword(ChangeUserPasswordDto changePassword, long userId)
+    public async Task<ChangeUserPasswordResult> ChangeUserPassword(ChangeUserPasswordDto changePassword, long userId, string? modifierName)
     {
         try
         {
             var user = await _userRepository
             .GetQuery()
-            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
+            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsPublished);
 
             if (user == null)
             {
@@ -409,7 +409,7 @@ public class UserService : IUserService
 
             user.Password = PasswordManager.HashPassword(changePassword.NewPassword, user.Salt);
 
-            _userRepository.EditEntity(user);
+            _userRepository.EditEntity(user, modifierName);
             await _userRepository.SaveChanges();
 
             return ChangeUserPasswordResult.Success;
@@ -427,7 +427,7 @@ public class UserService : IUserService
         {
             var user = await _userRepository
             .GetQuery()
-            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
+            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsPublished);
 
             if (user != null)
             {
@@ -450,7 +450,7 @@ public class UserService : IUserService
             var user = await _userRepository
             .GetQuery()
             .AsQueryable()
-            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsDelete);
+            .SingleOrDefaultAsync(x => x.Id == userId && !x.IsBlocked && !x.IsPublished);
 
             if (user != null)
             {
@@ -558,7 +558,7 @@ public class UserService : IUserService
             return new EditUserDto();
         }
     }
-    public async Task<EditUserResult> EditUser(EditUserDto user, string editorName)
+    public async Task<EditUserResult> EditUser(EditUserDto user, string? modifierName)
     {
         try
         {
@@ -575,10 +575,10 @@ public class UserService : IUserService
                 existingUser.Mobile = user.Mobile;
                 existingUser.Email = user.Email;
                 existingUser.IsMobileActive = user.IsMobileActivated;
-                existingUser.LastUpdateDate = DateTime.Now;
+                existingUser.LastModifiedAt = DateTime.Now;
 
 
-                _userRepository.EditEntityByEditor(existingUser, editorName);
+                _userRepository.EditEntity(existingUser, modifierName);
                 await _userRepository.SaveChanges();
 
                 return EditUserResult.Success;
@@ -659,7 +659,7 @@ public class UserService : IUserService
             return new FilterRoleDto();
         }
     }
-    public async Task<CreateRoleResult> CreateRole(CreateRoleDto role)
+    public async Task<CreateRoleResult> CreateRole(CreateRoleDto role, string? creatorName)
     {
         try
         {
@@ -668,7 +668,7 @@ public class UserService : IUserService
                 RoleName = role.RoleName
             };
 
-            await _roleRepository.AddEntity(newRole);
+            await _roleRepository.AddEntity(newRole, creatorName);
             await _roleRepository.SaveChanges();
 
             return CreateRoleResult.Success;
@@ -706,7 +706,7 @@ public class UserService : IUserService
             return new EditRoleDto();
         }
     }
-    public async Task<EditRoleResult> EditRole(EditRoleDto role, string editorName)
+    public async Task<EditRoleResult> EditRole(EditRoleDto role, string? modifier)
     {
         try
         {
@@ -717,9 +717,9 @@ public class UserService : IUserService
             if (existingRole != null)
             {
                 existingRole.RoleName = role.RoleName;
-                existingRole.LastUpdateDate = DateTime.Now;
+                existingRole.LastModifiedAt = DateTime.Now;
 
-                _roleRepository.EditEntityByEditor(existingRole, editorName);
+                _roleRepository.EditEntity(existingRole, modifier);
                 await _roleRepository.SaveChanges();
 
                 return EditRoleResult.Success;

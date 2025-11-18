@@ -37,7 +37,7 @@ namespace EShop.Application.Services.Implementation
             {
                 return await _sliderRepository
                 .GetQuery()
-                .OrderByDescending(x => x.CreateDate)
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
             }
             catch (Exception ex)
@@ -53,8 +53,8 @@ namespace EShop.Application.Services.Implementation
             {
                 return await _sliderRepository
                 .GetQuery()
-                .Where(x => x.IsActive && !x.IsDelete)
-                .OrderByDescending(x => x.CreateDate)
+                .Where(x => x.IsActive && !x.IsPublished)
+                .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
             }
             catch (Exception ex)
@@ -64,7 +64,7 @@ namespace EShop.Application.Services.Implementation
                 return new List<Slider>();
             }
         }
-        public async Task<CreateSliderResult> CreateSlide(CreateSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage)
+        public async Task<CreateSliderResult> CreateSlide(CreateSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage, string? creatorName)
         {
             try
             {
@@ -97,11 +97,10 @@ namespace EShop.Application.Services.Implementation
                     Link = slide.Link,
                     Description = slide.Description,
                     IsActive = slide.IsActive,
-                    IsDelete = false,
-                    CreateDate = DateTime.Now
+                    IsPublished = false
                 };
 
-                await _sliderRepository.AddEntity(newSilde);
+                await _sliderRepository.AddEntity(newSilde, creatorName);
                 await _sliderRepository.SaveChanges();
 
                 return CreateSliderResult.Success;
@@ -138,7 +137,7 @@ namespace EShop.Application.Services.Implementation
                 return new EditSliderDto();
             }
         }
-        public async Task<EditSliderResult> EditSlide(EditSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage, string editorName)
+        public async Task<EditSliderResult> EditSlide(EditSliderDto slide, IFormFile slideImage, IFormFile? slideMobileImage, string? editorName)
         {
             try
             {
@@ -173,11 +172,11 @@ namespace EShop.Application.Services.Implementation
                 Slide.Link = slide.Link;
                 Slide.Description = slide.Description;
                 Slide.IsActive = slide.IsActive;
-                Slide.LastUpdateDate = DateTime.Now;
+                Slide.LastModifiedAt = DateTime.Now;
                 
                 
 
-                _sliderRepository.EditEntityByEditor(Slide, editorName);
+                _sliderRepository.EditEntity(Slide, editorName);
                 await _sliderRepository.SaveChanges();
 
                 return EditSliderResult.Success;
@@ -189,7 +188,7 @@ namespace EShop.Application.Services.Implementation
                 return EditSliderResult.Error;
             }
         }
-        public async Task<bool> ActivateSlide(long id)
+        public async Task<bool> ActivateSlide(long id, string? modifierName)
         {
             try
             {
@@ -198,10 +197,10 @@ namespace EShop.Application.Services.Implementation
                 .SingleOrDefault(x => x.Id == id);
 
                 slide.IsActive = true;
-                slide.IsDelete = false;
-                slide.LastUpdateDate = DateTime.Now;
+                slide.IsPublished = false;
+                slide.LastModifiedAt = DateTime.Now;
 
-                _sliderRepository.EditEntity(slide);
+                _sliderRepository.EditEntity(slide, modifierName);
                 await _sliderRepository.SaveChanges();
 
                 return true;
@@ -213,7 +212,7 @@ namespace EShop.Application.Services.Implementation
                 return false;
             }
         }
-        public async Task<bool> DeActivateSlide(long id)
+        public async Task<bool> DeActivateSlide(long id, string? modifierName)
         {
             try
             {
@@ -222,10 +221,10 @@ namespace EShop.Application.Services.Implementation
                 .SingleOrDefault(x => x.Id == id);
 
                 slide.IsActive = false;
-                slide.IsDelete = true;
-                slide.LastUpdateDate = DateTime.Now;
+                slide.IsPublished = true;
+                slide.LastModifiedAt = DateTime.Now;
 
-                _sliderRepository.EditEntity(slide);
+                _sliderRepository.EditEntity(slide, modifierName);
                 await _sliderRepository.SaveChanges();
 
                 return true;
@@ -248,7 +247,7 @@ namespace EShop.Application.Services.Implementation
             {
                 return await _siteBannerRepository
                 .GetQuery()
-                .Where(x => x.Placement == placement && !x.IsDelete)
+                .Where(x => x.Placement == placement && !x.IsPublished)
                 .ToListAsync();
             }
             catch (Exception ex)
@@ -273,7 +272,7 @@ namespace EShop.Application.Services.Implementation
                 return new List<SiteBanner>();
             }
         }
-        public async Task<CreateSiteBannerResult> CreateSiteBanner(CreateSiteBannerDto banner, IFormFile bannerImage)
+        public async Task<CreateSiteBannerResult> CreateSiteBanner(CreateSiteBannerDto banner, IFormFile bannerImage, string? creatorName)
         {
             try
             {
@@ -297,7 +296,7 @@ namespace EShop.Application.Services.Implementation
                     GridColumnSize = banner.GridColumnSize
                 };
 
-                await _siteBannerRepository.AddEntity(newSiteBanner);
+                await _siteBannerRepository.AddEntity(newSiteBanner, creatorName);
                 await _siteBannerRepository.SaveChanges();
 
                 return CreateSiteBannerResult.Success;
@@ -363,9 +362,9 @@ namespace EShop.Application.Services.Implementation
                     existingSiteBanner.Description = banner.Description;
                     existingSiteBanner.Link = banner.Link;
                     existingSiteBanner.GridColumnSize = banner.GridColumnSize;
-                    existingSiteBanner.LastUpdateDate = DateTime.Now;
+                    existingSiteBanner.LastModifiedAt = DateTime.Now;
 
-                    _siteBannerRepository.EditEntityByEditor(existingSiteBanner, editorName);
+                    _siteBannerRepository.EditEntity(existingSiteBanner, editorName);
                     await _siteBannerRepository.SaveChanges();
 
                     return EditSiteBannerResult.Success;
@@ -380,7 +379,7 @@ namespace EShop.Application.Services.Implementation
                 return EditSiteBannerResult.Error;
             }
         }
-        public async Task<bool> ActivateSiteBanner(long id)
+        public async Task<bool> ActivateSiteBanner(long id, string? modifierName)
         {
             try
             {
@@ -390,9 +389,9 @@ namespace EShop.Application.Services.Implementation
 
                 if (siteBanner != null)
                 {
-                    siteBanner.IsDelete = false;
+                    siteBanner.IsPublished = false;
 
-                    _siteBannerRepository.EditEntity(siteBanner);
+                    _siteBannerRepository.EditEntity(siteBanner, modifierName);
                     await _siteBannerRepository.SaveChanges();
 
                     return true;
@@ -407,7 +406,7 @@ namespace EShop.Application.Services.Implementation
                 return false;
             }
         }
-        public async Task<bool> DeActivateSiteBanner(long id)
+        public async Task<bool> DeActivateSiteBanner(long id, string? modifierName)
         {
             try
             {
@@ -417,9 +416,9 @@ namespace EShop.Application.Services.Implementation
 
                 if (siteBanner != null)
                 {
-                    siteBanner.IsDelete = true;
+                    siteBanner.IsPublished = true;
 
-                    _siteBannerRepository.EditEntity(siteBanner);
+                    _siteBannerRepository.EditEntity(siteBanner, modifierName);
                     await _siteBannerRepository.SaveChanges();
 
                     return true;

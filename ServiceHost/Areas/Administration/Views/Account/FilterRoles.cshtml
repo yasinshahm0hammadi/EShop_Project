@@ -101,10 +101,10 @@
                                                 <span>@role.RoleName</span>
                                             </div>
                                             <div class="nk-tb-col tb-col-md">
-                                                <span>@role.CreateDate.ToStringShamsiDate()</span>
+                                                <span>@role.CreatedAt.ToString()</span>
                                             </div>
                                             <div class="nk-tb-col tb-col-md">
-                                                <span>@role.LastUpdateDate.ToStringShamsiDate() | @(!string.IsNullOrWhiteSpace(role.editorName) ? role.editorName : "هیچکس")</span>
+                                                <span>@role.LastModifiedAt.ToString() | @(!string.IsNullOrWhiteSpace(role.Modifiedby) ? role.Modifiedby : "هیچکس")</span>
                                             </div>
                                             <div class="nk-tb-col nk-tb-col-tools">
                                                 <ul class="nk-tb-actions gx-1">

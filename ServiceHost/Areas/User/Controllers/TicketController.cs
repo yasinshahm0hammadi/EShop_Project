@@ -1,4 +1,5 @@
-﻿using EShop.Application.Services.Interface;
+﻿using EShop.Application.Services.Implementation;
+using EShop.Application.Services.Interface;
 using EShop.Domain.DTOs.Contact.Ticket;
 using EShop.Domain.Entities.Contact.Ticket;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,12 @@ namespace ServiceHost.Areas.User.Controllers
         #region Constructor
 
         private readonly IContactService _contactService;
+        private readonly IUserService _userService;
 
-        public TicketController(IContactService contactService)
+        public TicketController(IContactService contactService, IUserService userService)
         {
             _contactService = contactService;
+            _userService = userService;
         }
 
         #endregion
@@ -49,7 +52,8 @@ namespace ServiceHost.Areas.User.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _contactService.AddUserTicket(ticket, User.GetUserId());
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _contactService.AddUserTicket(ticket, User.GetUserId(), creatorName);
 
                 switch (result)
                 {
@@ -99,7 +103,8 @@ namespace ServiceHost.Areas.User.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _contactService.OwnerAnswerTicket(answer, User.GetUserId());
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _contactService.OwnerAnswerTicket(answer, User.GetUserId(), creatorName);
 
                 switch (result)
                 {

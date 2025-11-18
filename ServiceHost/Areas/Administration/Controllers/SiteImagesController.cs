@@ -47,7 +47,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _siteImagesService.CreateSlide(slide, slideImage, slideMobileImage);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _siteImagesService.CreateSlide(slide, slideImage, slideMobileImage, creatorName);
 
                 if (result == CreateSliderResult.Success)
                 {
@@ -108,7 +109,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("ActivateSlide/{slideId}")]
         public async Task<IActionResult> ActivateSlide(long slideId)
         {
-            var result = await _siteImagesService.ActivateSlide(slideId);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _siteImagesService.ActivateSlide(slideId, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "اسلاید موردنظر با موفقیت فعال شد.";
@@ -123,7 +125,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("DeActivateSlide/{slideId}")]
         public async Task<IActionResult> DeActivateSlide(long slideId)
         {
-            var result = await _siteImagesService.DeActivateSlide(slideId);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _siteImagesService.DeActivateSlide(slideId, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "اسلاید موردنظر با موفقیت غیرفعال شد.";
@@ -165,7 +168,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _siteImagesService.CreateSiteBanner(banner, bannerImage);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _siteImagesService.CreateSiteBanner(banner, bannerImage, creatorName);
 
                 if (result == CreateSiteBannerResult.Success)
                 {
@@ -224,7 +228,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("ActivateSitBanner/{bannerId}")]
         public async Task<IActionResult> ActivateSitBanner(long bannerId)
         {
-            var result = await _siteImagesService.ActivateSiteBanner(bannerId);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _siteImagesService.ActivateSiteBanner(bannerId, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "بنر موردنظر با موفقیت فعال شد.";
@@ -239,7 +244,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("DeActivateSiteBanner/{bannerId}")]
         public async Task<IActionResult> DeActivateSiteBanner(long bannerId)
         {
-            var result = await _siteImagesService.DeActivateSiteBanner(bannerId);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _siteImagesService.DeActivateSiteBanner(bannerId, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "بنر موردنظر با موفقیت غیرفعال شد.";

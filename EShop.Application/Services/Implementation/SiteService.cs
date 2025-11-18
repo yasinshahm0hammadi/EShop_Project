@@ -47,8 +47,8 @@ public class SiteService : ISiteService
                Address = x.Address,
                MapScript = x.MapScript,
                IsDefault = x.IsDefault,
-               CreateDate = x.CreateDate.ToStringShamsiDate(),
-               LastUpdateDate = x.LastUpdateDate.ToStringShamsiDate()
+               CreateDate = x.CreatedAt.ToString(),
+               LastUpdateDate = x.LastModifiedAt.ToString()
            }).FirstOrDefaultAsync(x => x.IsDefault);
 
             return siteSetting ?? new SiteSettingDto();
@@ -93,7 +93,7 @@ public class SiteService : ISiteService
             return new EditSiteSettingDto();
         }
     }
-    public async Task<EditSiteSettingResult> EditSiteSetting(EditSiteSettingDto newSetting, string userName)
+    public async Task<EditSiteSettingResult> EditSiteSetting(EditSiteSettingDto newSetting, string? modifierName)
     {
         try
         {
@@ -110,9 +110,8 @@ public class SiteService : ISiteService
                 mainSetting.Mobile = newSetting.Mobile;
                 mainSetting.Phone = newSetting.Phone;
                 mainSetting.IsDefault = newSetting.IsDefault;
-                mainSetting.LastUpdateDate = DateTime.Now.ToShamsiDateTime();
 
-                _siteSettingRepository.EditEntityByEditor(mainSetting, userName);
+                _siteSettingRepository.EditEntity(mainSetting, modifierName);
                 await _siteSettingRepository.SaveChanges();
 
                 return EditSiteSettingResult.Success;
@@ -138,14 +137,14 @@ public class SiteService : ISiteService
         {
             return await _aboutUsRepository
             .GetQuery()
-            .Where(x => !x.IsDelete)
+            .Where(x => !x.IsPublished)
             .Select(x => new AboutUsDto
             {
                 Id = x.Id,
                 HeaderTitle = x.HeaderTitle,
                 Description = x.Description,
-                CreateDate = x.CreateDate.ToStringShamsiDate(),
-                LastUpdateDate = x.LastUpdateDate.ToStringShamsiDate()
+                CreateDate = x.CreatedAt.ToString(),
+                LastUpdateDate = x.LastModifiedAt.ToString()
             }).OrderByDescending(x => x.Id)
             .ToListAsync();
         }
@@ -156,7 +155,7 @@ public class SiteService : ISiteService
             return new List<AboutUsDto>();
         }
     }
-    public async Task<CreateAboutUsResult> CreateAboutUs(CreateAboutUsDto about)
+    public async Task<CreateAboutUsResult> CreateAboutUs(CreateAboutUsDto about, string? creatorName)
     {
         try
         {
@@ -166,7 +165,7 @@ public class SiteService : ISiteService
                 Description = about.Description,
             };
 
-            await _aboutUsRepository.AddEntity(newAboutUs);
+            await _aboutUsRepository.AddEntity(newAboutUs, creatorName);
             await _aboutUsRepository.SaveChanges();
 
             return CreateAboutUsResult.Success;
@@ -203,7 +202,7 @@ public class SiteService : ISiteService
             return new EditAboutUsDto();
         }
     }
-    public async Task<EditAboutUsResult> EditAboutUs(EditAboutUsDto about, string userName)
+    public async Task<EditAboutUsResult> EditAboutUs(EditAboutUsDto about, string? modifierName)
     {
         try
         {
@@ -213,9 +212,9 @@ public class SiteService : ISiteService
             {
                 aboutUs.HeaderTitle = about.HeaderTitle;
                 aboutUs.Description = about.Description;
-                aboutUs.LastUpdateDate = DateTime.Now;
+                aboutUs.LastModifiedAt = DateTime.Now;
 
-                _aboutUsRepository.EditEntityByEditor(aboutUs, userName);
+                _aboutUsRepository.EditEntity(aboutUs, modifierName);
                 await _aboutUsRepository.SaveChanges();
 
                 return EditAboutUsResult.Success;
@@ -240,7 +239,7 @@ public class SiteService : ISiteService
         {
             return await _featureRepository
             .GetQuery()
-            .Where(x => !x.IsDelete)
+            .Where(x => !x.IsPublished)
             .Select(x => new FeatureDto
             {
                 Id = x.Id,
@@ -267,7 +266,7 @@ public class SiteService : ISiteService
         {
             return await _questionRepository
             .GetQuery()
-            .Where(x => !x.IsDelete)
+            .Where(x => !x.IsPublished)
             .Select(x => new QuestionDto
             {
                 Id = x.Id,

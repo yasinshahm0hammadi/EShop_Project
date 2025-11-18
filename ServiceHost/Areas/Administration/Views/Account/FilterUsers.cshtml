@@ -173,7 +173,7 @@
                                                 </ul>
                                             </div>
                                             <div class="nk-tb-col tb-col-lg">
-                                                <span>@user.LastUpdateDate.ToStringShamsiDate() | @(!string.IsNullOrWhiteSpace(user.editorName) ? user.editorName : "هیچکس")</span>
+                                                <span>@user.LastModifiedAt.ToString() | @(!string.IsNullOrWhiteSpace(user.Modifiedby) ? user.Modifiedby : "هیچکس")</span>
                                             </div>
                                             <div class="nk-tb-col tb-col-md">
                                                 @if (user.IsBlocked)
@@ -199,7 +199,7 @@
                                                                     <li>
                                                                         <a asp-area="Administration" asp-controller="Account" asp-action="EditUser" asp-route-userId="@user.Id"><em class="icon ni ni-edit-alt"></em><span>به روزرسانی اطلاعات</span></a>
                                                                     </li>
-                                                                    @if (!user.IsDelete)
+                                                                    @if (!user.IsPublished)
                                                                     {
                                                                         <li>
                                                                             <a href="#"><em class="icon ni ni-na"></em><span>انسداد کاربر</span></a>

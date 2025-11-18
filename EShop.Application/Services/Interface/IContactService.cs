@@ -15,12 +15,12 @@ public interface IContactService : IAsyncDisposable
 
     #region Ticket
 
-    Task<AddTicketResult> AddUserTicket(AddTicketDto ticket, long userId);
+    Task<AddTicketResult> AddUserTicket(AddTicketDto ticket, long userId, string? creatorName);
     Task<FilterTicketDto> TicketsList(FilterTicketDto ticket);
     Task<TicketDetailDto> GetTicketDetail(long ticketId, long userId);
     Task<(string? OwnerAvatar, string? AdminAvatar)> GetTicketAvatars(long ticketId);
-    Task<AnswerTicketResult> OwnerAnswerTicket(AnswerTicketDto answer, long userId);
-    Task<AnswerTicketResult> AdminAnswerTicket(AnswerTicketDto answer, long userId);
+    Task<AnswerTicketResult> OwnerAnswerTicket(AnswerTicketDto answer, long userId, string? creatorName);
+    Task<AnswerTicketResult> AdminAnswerTicket(AnswerTicketDto answer, long userId, string? creatorName);
 
     #endregion
 }

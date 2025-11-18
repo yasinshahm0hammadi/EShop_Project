@@ -114,7 +114,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _userService.CreateRole(role);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _userService.CreateRole(role, creatorName);
 
                 switch (result)
                 {

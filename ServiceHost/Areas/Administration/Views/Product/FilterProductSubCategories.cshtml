@@ -112,10 +112,10 @@
                                                 </span>
                                             </div>
                                             <div class="nk-tb-col">
-                                                <span class="tb-sub">@productCategory.CreateDate.ToStringShamsiDate()</span>
+                                                <span class="tb-sub">@productCategory.CreatedAt.ToString()</span>
                                             </div>
                                             <div class="nk-tb-col">
-                                                <span class="tb-sub">@productCategory.LastUpdateDate.ToStringShamsiDate()</span>
+                                                <span class="tb-sub">@productCategory.LastModifiedAt.ToString()</span>
                                             </div>
                                             <div class="nk-tb-col">
                                                 @if (productCategory.IsActive)

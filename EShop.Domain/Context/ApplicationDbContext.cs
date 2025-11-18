@@ -74,6 +74,12 @@ public class ApplicationDbContext : DbContext
 
     #endregion
 
+    #region
+
+    public DbSet<ProductFeature> ProductFeatures { get; set; }
+
+    #endregion
+
     #endregion
 
     #region OnModelCreating

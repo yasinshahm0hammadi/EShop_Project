@@ -5,10 +5,12 @@ using EShop.Domain.DTOs.Paging;
 using EShop.Domain.DTOs.Product;
 using EShop.Domain.DTOs.Product.ProductCategory;
 using EShop.Domain.DTOs.Product.ProductColor;
+using EShop.Domain.DTOs.Product.ProductFeature;
 using EShop.Domain.Entities.Product;
 using EShop.Domain.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 
 namespace EShop.Application.Services.Implementation
 {
@@ -20,16 +22,19 @@ namespace EShop.Application.Services.Implementation
         private readonly IGenericRepository<ProductCategory> _productCategoryRepository;
         private readonly IGenericRepository<ProductSelectedCategory> _productSelectedCategoryRepository;
         private readonly IGenericRepository<ProductColor> _productColorRepository;
+        private readonly IGenericRepository<ProductFeature> _productFeatureRepository;
 
         public ProductService(IGenericRepository<Product> productRepository,
             IGenericRepository<ProductCategory> productCategoryRepository,
             IGenericRepository<ProductSelectedCategory> productSelectedCategoryRepository,
-            IGenericRepository<ProductColor> productColorRepository)
+            IGenericRepository<ProductColor> productColorRepository,
+            IGenericRepository<ProductFeature> productFeatureRepository)
         {
             _productRepository = productRepository;
             _productCategoryRepository = productCategoryRepository;
             _productSelectedCategoryRepository = productSelectedCategoryRepository;
             _productColorRepository = productColorRepository;
+            _productFeatureRepository = productFeatureRepository;
         }
 
         #endregion
@@ -65,7 +70,7 @@ namespace EShop.Application.Services.Implementation
                 switch (product.OrderBy)
                 {
                     case FilterProductOrderBy.CreateDateDescending:
-                        query = query.OrderByDescending(x => x.CreateDate);
+                        query = query.OrderByDescending(x => x.CreatedAt);
                         break;
                     case FilterProductOrderBy.PriceAscending:
                         query = query.OrderBy(x => x.Price);
@@ -83,7 +88,7 @@ namespace EShop.Application.Services.Implementation
                         query = query.OrderBy(x => x.SellCount);
                         break;
                     case FilterProductOrderBy.CreateDateAscending:
-                        query = query.OrderBy(x => x.CreateDate);
+                        query = query.OrderBy(x => x.CreatedAt);
                         break;
                 }
 
@@ -112,13 +117,13 @@ namespace EShop.Application.Services.Implementation
                 return product.SetPaging(pager).SetProduct(allEntities);
             }
             catch (Exception ex)
-            { 
+            {
                 Logger.ShowError(ex);
 
                 return new FilterProductDto();
             }
         }
-        public async Task<CreateProductResult> CreateProduct(CreateProductDto product)
+        public async Task<CreateProductResult> CreateProduct(CreateProductDto product, string? creatorName)
         {
             try
             {
@@ -152,11 +157,11 @@ namespace EShop.Application.Services.Implementation
 
                 if (product.SelectedCategories is not null)
                 {
-                    await AddProductSelectedCategories(newProduct.Id, product.SelectedCategories);
+                    await AddProductSelectedCategories(newProduct.Id, product.SelectedCategories, creatorName);
                     await _productSelectedCategoryRepository.SaveChanges();
                 }
 
-                await _productRepository.AddEntity(newProduct);
+                await _productRepository.AddEntity(newProduct, creatorName);
                 await _productRepository.SaveChanges();
 
                 return CreateProductResult.Success;
@@ -206,7 +211,7 @@ namespace EShop.Application.Services.Implementation
                 return new EditProductDto();
             }
         }
-        public async Task<EditProductResult> EditProduct(EditProductDto product, string editorName)
+        public async Task<EditProductResult> EditProduct(EditProductDto product, string? modifierName)
         {
             try
             {
@@ -244,11 +249,11 @@ namespace EShop.Application.Services.Implementation
                     {
                         await RemoveProductSelectedCategories(product.Id);
 
-                        await AddProductSelectedCategories(product.Id, product.SelectedCategories);
+                        await AddProductSelectedCategories(product.Id, product.SelectedCategories, modifierName);
                         await _productCategoryRepository.SaveChanges();
                     }
 
-                    _productRepository.EditEntityByEditor(existingProduct, editorName);
+                    _productRepository.EditEntity(existingProduct, modifierName);
                     await _productRepository.SaveChanges();
 
                     return EditProductResult.Success;
@@ -269,7 +274,7 @@ namespace EShop.Application.Services.Implementation
             {
                 var maxViewedProducts = await _productRepository
                 .GetQuery()
-                .Where(x => x.IsDelete && x.IsActive)
+                .Where(x => x.IsPublished && x.IsActive)
                 .OrderByDescending(x => x.ViewCount)
                 .Skip(0)
                 .Take(take)
@@ -296,7 +301,7 @@ namespace EShop.Application.Services.Implementation
             {
                 var latestArrivalProducts = await _productRepository
                 .GetQuery()
-                .Where(x => x.IsActive && !x.IsDelete)
+                .Where(x => x.IsActive && !x.IsPublished)
                 .OrderByDescending(x => x.ViewCount)
                 .Skip(0)
                 .Take(take)
@@ -317,7 +322,7 @@ namespace EShop.Application.Services.Implementation
                 return new List<Product>();
             }
         }
-        public async Task<bool> ActivateProduct(long id)
+        public async Task<bool> ActivateProduct(long id, string? modifierName)
         {
             try
             {
@@ -328,9 +333,9 @@ namespace EShop.Application.Services.Implementation
                 if (product != null)
                 {
                     product.IsActive = true;
-                    product.IsDelete = false;
+                    product.IsPublished = false;
 
-                    _productRepository.EditEntity(product);
+                    _productRepository.EditEntity(product, modifierName);
                     await _productRepository.SaveChanges();
 
                     return true;
@@ -345,7 +350,7 @@ namespace EShop.Application.Services.Implementation
                 return false;
             }
         }
-        public async Task<bool> DeActivateProduct(long id)
+        public async Task<bool> DeActivateProduct(long id, string? modifierName)
         {
             try
             {
@@ -356,9 +361,9 @@ namespace EShop.Application.Services.Implementation
                 if (product != null)
                 {
                     product.IsActive = false;
-                    product.IsDelete = true;
+                    product.IsPublished = true;
 
-                    _productRepository.EditEntity(product);
+                    _productRepository.EditEntity(product, modifierName);
                     await _productRepository.SaveChanges();
 
                     return true;
@@ -392,7 +397,7 @@ namespace EShop.Application.Services.Implementation
 
                 if (!string.IsNullOrWhiteSpace(productCategory.Title))
                 {
-                    query = query.Where(x => EF.Functions.Like(x.Title, $"%{productCategory.Title}%")).OrderByDescending(x => x.CreateDate);
+                    query = query.Where(x => EF.Functions.Like(x.Title, $"%{productCategory.Title}%")).OrderByDescending(x => x.CreatedAt);
                 }
 
                 #endregion
@@ -421,10 +426,10 @@ namespace EShop.Application.Services.Implementation
         {
             return await _productCategoryRepository
                 .GetQuery()
-                .Where(x => x.IsActive && !x.IsDelete)
+                .Where(x => x.IsActive && !x.IsPublished)
                 .ToListAsync();
         }
-        public async Task<CreateProductCategoryResult> CreateProductCategory(CreateProductCategoryDto productCategory)
+        public async Task<CreateProductCategoryResult> CreateProductCategory(CreateProductCategoryDto productCategory, string? creatorName)
         {
             try
             {
@@ -453,7 +458,7 @@ namespace EShop.Application.Services.Implementation
                     IsActive = productCategory.IsActive
                 };
 
-                await _productCategoryRepository.AddEntity(newProductCategory);
+                await _productCategoryRepository.AddEntity(newProductCategory, creatorName);
                 await _productCategoryRepository.SaveChanges();
 
                 return CreateProductCategoryResult.Success;
@@ -484,7 +489,7 @@ namespace EShop.Application.Services.Implementation
 
             return null;
         }
-        public async Task<EditProductCategoryResult> EditProductCategory(EditProductCategoryDto productCategory, string editorName)
+        public async Task<EditProductCategoryResult> EditProductCategory(EditProductCategoryDto productCategory, string? modifierName)
         {
             try
             {
@@ -516,7 +521,7 @@ namespace EShop.Application.Services.Implementation
                     existingProductCategory.ParentId = productCategory.Id;
                     existingProductCategory.IsActive = productCategory.IsActive;
 
-                    _productCategoryRepository.EditEntityByEditor(existingProductCategory, editorName);
+                    _productCategoryRepository.EditEntity(existingProductCategory, modifierName);
                     await _productCategoryRepository.SaveChanges();
 
                     return EditProductCategoryResult.Success;
@@ -529,7 +534,7 @@ namespace EShop.Application.Services.Implementation
                 return EditProductCategoryResult.Error;
             }
         }
-        public async Task<bool> ActivateProductCategory(long id)
+        public async Task<bool> ActivateProductCategory(long id, string? modifierName)
         {
             var productCategory = await _productCategoryRepository
                 .GetQuery()
@@ -538,9 +543,9 @@ namespace EShop.Application.Services.Implementation
             if (productCategory != null)
             {
                 productCategory.IsActive = true;
-                productCategory.IsDelete = false;
+                productCategory.IsPublished = false;
 
-                _productCategoryRepository.EditEntity(productCategory);
+                _productCategoryRepository.EditEntity(productCategory, modifierName);
                 await _productCategoryRepository.SaveChanges();
 
                 return true;
@@ -548,7 +553,7 @@ namespace EShop.Application.Services.Implementation
 
             return false;
         }
-        public async Task<bool> DeActivateProductCategory(long id)
+        public async Task<bool> DeActivateProductCategory(long id, string? modifierName)
         {
             var productCategory = await _productCategoryRepository
                 .GetQuery()
@@ -557,9 +562,9 @@ namespace EShop.Application.Services.Implementation
             if (productCategory != null)
             {
                 productCategory.IsActive = false;
-                productCategory.IsDelete = true;
+                productCategory.IsPublished = true;
 
-                _productCategoryRepository.EditEntity(productCategory);
+                _productCategoryRepository.EditEntity(productCategory, modifierName);
                 await _productCategoryRepository.SaveChanges();
 
                 return true;
@@ -570,7 +575,7 @@ namespace EShop.Application.Services.Implementation
 
         #region Add / Remove Product Category
 
-        public async Task AddProductSelectedCategories(long productId, List<long> productSelectedCategoriesId)
+        public async Task AddProductSelectedCategories(long productId, List<long> productSelectedCategoriesId, string? creatorName)
         {
             try
             {
@@ -585,7 +590,7 @@ namespace EShop.Application.Services.Implementation
                     });
                 }
 
-                await _productSelectedCategoryRepository.AddRangeEntity(productSelectedCategories);
+                await _productSelectedCategoryRepository.AddRangeEntity(productSelectedCategories, creatorName);
             }
             catch (Exception ex)
             {
@@ -601,7 +606,7 @@ namespace EShop.Application.Services.Implementation
                 .Where(x => x.Id == productId)
                 .ToListAsync();
 
-                _productSelectedCategoryRepository.DeletePermanentEntities(productSelectedCategories);
+                _productSelectedCategoryRepository.DeleteEntities(productSelectedCategories);
             }
             catch (Exception ex)
             {
@@ -629,8 +634,8 @@ namespace EShop.Application.Services.Implementation
                         ColorName = x.ColorName,
                         ColorCode = x.ColorCode,
                         Price = x.Price,
-                        CreateDate = x.CreateDate.ToStringShamsiDate(),
-                        IsActive = x.IsDelete,
+                        CreateDate = x.CreatedAt.ToString(),
+                        IsActive = x.IsPublished,
                     }).ToListAsync();
             }
             catch (Exception ex)
@@ -640,7 +645,7 @@ namespace EShop.Application.Services.Implementation
                 return new List<FilterProductColorDto>();
             }
         }
-        public async Task<CreateProductColorResult> CreateProductColor(CreateProductColorDto color, long productId)
+        public async Task<CreateProductColorResult> CreateProductColor(CreateProductColorDto color, long productId, string? creatorName)
         {
             try
             {
@@ -663,7 +668,7 @@ namespace EShop.Application.Services.Implementation
                     }
                 }
 
-                await AddProductColors(productId, color.ProductColors);
+                await AddProductColors(productId, color.ProductColors, creatorName);
                 await _productColorRepository.SaveChanges();
 
                 return CreateProductColorResult.Success;
@@ -702,7 +707,7 @@ namespace EShop.Application.Services.Implementation
                 return new EditProductColorDto();
             }
         }
-        public async Task<EditProductColorResult> EditProductColor(EditProductColorDto color, long colorId)
+        public async Task<EditProductColorResult> EditProductColor(EditProductColorDto color, long colorId, string? modifierName)
         {
             try
             {
@@ -728,7 +733,7 @@ namespace EShop.Application.Services.Implementation
                 existingColor.ColorCode = color.ColorCode;
                 existingColor.Price = color.Price;
 
-                _productColorRepository.EditEntity(existingColor);
+                _productColorRepository.EditEntity(existingColor, modifierName);
                 await _productColorRepository.SaveChanges();
 
                 return EditProductColorResult.ColorNotFound;
@@ -743,7 +748,7 @@ namespace EShop.Application.Services.Implementation
 
         #region Add or Remove Product Colors
 
-        public async Task AddProductColors(long productId, List<CreateProductColorDto> productColors)
+        public async Task AddProductColors(long productId, List<CreateProductColorDto> productColors, string? creatorName)
         {
             var productSelectedColors = new List<ProductColor>();
 
@@ -761,7 +766,82 @@ namespace EShop.Application.Services.Implementation
                 }
             }
 
-            await _productColorRepository.AddRangeEntity(productSelectedColors);
+            await _productColorRepository.AddRangeEntity(productSelectedColors, creatorName);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Product Features
+
+        public async Task<List<FilterProductFeatureDto>> GetAllProductInAdminPanel()
+        {
+            try
+            {
+                return await _productFeatureRepository
+               .GetQuery()
+               .Include(x => x.Product)
+               .Select(x => new FilterProductFeatureDto
+               {
+                   Id = x.Id,
+                   ProductId = x.ProductId,
+                   FeatureTitle = x.FeatureTitle,
+                   FeatureValue = x.FeatureValue,
+               }).OrderByDescending(x => x.CreateDate)
+               .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return new List<FilterProductFeatureDto>();
+            }
+        }
+        public async Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, string? modifierName)
+        {
+            try
+            {
+                var product = await _productFeatureRepository.GetEntityById(feature.ProductId);
+
+                if (product is null)
+                {
+                    return CreateProductFeatureResult.ProductNotFound;
+                }
+
+                await AddProductFeatures(feature.ProductId, feature.ProductFeatures, modifierName);
+                await _productFeatureRepository.SaveChanges();
+
+                return CreateProductFeatureResult.Success;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowError(ex);
+
+                return CreateProductFeatureResult.Error;
+            }
+        }
+
+        #region Add or Remove Product Features
+
+        public async Task AddProductFeatures(long productId, List<CreateProductFeatureDto> features, string? creatorName)
+        {
+            var productSelectedFeature = new List<ProductFeature>();
+
+            foreach (var feature in features)
+            {
+                if (productSelectedFeature.All(x => x.FeatureTitle != feature.FeatureTitle))
+                {
+                    productSelectedFeature.Add(new ProductFeature
+                    {
+                        ProductId = productId,
+                        FeatureTitle = feature.FeatureTitle,
+                        FeatureValue = feature.FeatureValue,
+                    });
+                }
+            }
+
+            await _productFeatureRepository.AddRangeEntity(productSelectedFeature, creatorName);
         }
 
         #endregion

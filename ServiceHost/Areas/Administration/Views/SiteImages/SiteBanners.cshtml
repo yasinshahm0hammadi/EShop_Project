@@ -57,7 +57,7 @@
                                                 <div>
                                                     <span class="nk-menu-text">
                                                         بنر @banner.Id
-                                                        @if (!banner.IsDelete)
+                                                        @if (!banner.IsPublished)
                                                         {
                                                             <span class="badge bg-success">فعال</span>
                                                         }
@@ -94,7 +94,7 @@
                                                         <ul class="link-list-plain">
                                                             <li><a asp-area="Administration" asp-controller="SiteImages" asp-action="EditSiteBanner" asp-route-bannerId="@banner.Id">ویرایش</a></li>
                                                             <li>
-                                                                @if (banner.IsDelete)
+                                                                @if (banner.IsPublished)
                                                                 {
                                                                     <a asp-area="Administration" asp-controller="SiteImages" asp-action="ActivateSitBanner" asp-route-bannerId="@banner.Id">فعال کردن</a>
                                                                 }

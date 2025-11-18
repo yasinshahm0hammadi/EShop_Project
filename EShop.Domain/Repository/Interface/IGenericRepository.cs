@@ -5,14 +5,13 @@ namespace EShop.Domain.Repository.Interface;
 public interface IGenericRepository<TEntity> : IAsyncDisposable where TEntity : BaseEntity
 {
     IQueryable<TEntity> GetQuery();
-    Task AddEntity(TEntity entity);
-    Task AddRangeEntity(List<TEntity> entities);
+    Task AddEntity(TEntity entity, string? creatorName);
+    Task AddRangeEntity(List<TEntity> entities, string? creatorName);
     Task<TEntity> GetEntityById(long entityId);
-    void EditEntity(TEntity entity);
-    void EditEntityByEditor(TEntity entity, string username);
+    void EditEntity(TEntity entity, string? modifierName);
+    void UnpublishEntity(TEntity entity, string? modifierName);
+    Task UnpublishEntityById(long entityId, string? modifierName);
     void DeleteEntity(TEntity entity);
-    Task DeleteEntityById(long entityId);
-    void DeletePermanentEntity(TEntity entity);
-    void DeletePermanentEntities(List<TEntity> entityIds);
+    void DeleteEntities(List<TEntity> entityIds);
     Task SaveChanges();
 }

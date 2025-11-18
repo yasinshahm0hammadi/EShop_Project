@@ -50,7 +50,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _productService.CreateProduct(newProduct);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _productService.CreateProduct(newProduct, creatorName);
 
                 switch (result)
                 {
@@ -115,7 +116,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("ActivateProduct/{id}")]
         public async Task<IActionResult> ActivateProduct(long id)
         {
-            var result = await _productService.ActivateProduct(id);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.ActivateProduct(id, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "محصول موردنظر با موفقیت فعال شد.";
@@ -130,7 +132,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("DeActivateProduct/{id}")]
         public async Task<IActionResult> DeActivateProduct(long id)
         {
-            var result = await _productService.DeActivateProduct(id);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.DeActivateProduct(id, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "محصول موردنظر با موفقیت غیرفعال شد.";
@@ -176,7 +179,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _productService.CreateProductCategory(newProductCategory);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _productService.CreateProductCategory(newProductCategory, creatorName);
 
                 switch (result)
                 {
@@ -242,7 +246,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("ActivateProductCategory/{id}")]
         public async Task<IActionResult> ActivateProductCategory(long id)
         {
-            var result = await _productService.ActivateProductCategory(id);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.ActivateProductCategory(id, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "دسته بندی محصول موردنظر با موفقیت فعال شد.";
@@ -257,7 +262,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("DeActivateProductCategory/{id}")]
         public async Task<IActionResult> DeActivateProductCategory(long id)
         {
-            var result = await _productService.DeActivateProductCategory(id);
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.DeActivateProductCategory(id, modifierName);
             if (result)
             {
                 TempData[SuccessMessage] = "دسته بندی محصول موردنظر با موفقیت غیرفعال شد.";
@@ -300,7 +306,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _productService.CreateProductCategory(newProductSubCategory);
+                var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _productService.CreateProductCategory(newProductSubCategory, creatorName);
 
                 switch (result)
                 {
@@ -386,25 +393,26 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpPost("CreateProductColor/{productId}"), ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateProductColor(CreateProductColorDto newProductColor, long productId)
         {
-                var result = await _productService.CreateProductColor(newProductColor, productId);
+            var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.CreateProductColor(newProductColor, productId, creatorName);
 
-                switch (result)
-                {
-                    case CreateProductColorResult.Success:
-                        TempData[SuccessMessage] = "رنگ محصول جدید با موفقیت ایجاد شد.";
-                        return RedirectToAction("FilterProductColors", "Product", new { area = "Administration", ProductId = productId});
-                       break;
-                    case CreateProductColorResult.Error:
-                        TempData[ErrorMessage] = "فرایند ایجاد رنگ محصول با خطا مواجه شد، لطفا بعدا امتحان کنید.";
-                        break;
-                    case CreateProductColorResult.ProductNotFound:
-                        TempData[WarningMessage] = "هیچ محصولی با این مشخصات یافت نشد.";
-                        break;
-                    case CreateProductColorResult.DuplicateColor:
-                        TempData[WarningMessage] = "رنگ تکراری می باشد";
-                        break;
+            switch (result)
+            {
+                case CreateProductColorResult.Success:
+                    TempData[SuccessMessage] = "رنگ محصول جدید با موفقیت ایجاد شد.";
+                    return RedirectToAction("FilterProductColors", "Product", new { area = "Administration", ProductId = productId });
+                    break;
+                case CreateProductColorResult.Error:
+                    TempData[ErrorMessage] = "فرایند ایجاد رنگ محصول با خطا مواجه شد، لطفا بعدا امتحان کنید.";
+                    break;
+                case CreateProductColorResult.ProductNotFound:
+                    TempData[WarningMessage] = "هیچ محصولی با این مشخصات یافت نشد.";
+                    break;
+                case CreateProductColorResult.DuplicateColor:
+                    TempData[WarningMessage] = "رنگ تکراری می باشد";
+                    break;
 
-                }
+            }
 
             return View(newProductColor);
         }
@@ -425,7 +433,8 @@ namespace ServiceHost.Areas.Administration.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _productService.EditProductColor(productColor, productId);
+                var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _productService.EditProductColor(productColor, productId, modifierName);
 
                 switch (result)
                 {

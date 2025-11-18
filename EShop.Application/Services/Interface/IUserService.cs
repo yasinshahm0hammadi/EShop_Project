@@ -53,7 +53,7 @@ public interface IUserService : IAsyncDisposable
     #region Update User Profile
 
     Task<UpdateUserProfileDto> GetUserProfileForEdit(long userId);
-    Task<UpdateUserProfileResult> EditUserProfile(UpdateUserProfileDto profile, long userId, IFormFile avatar);
+    Task<UpdateUserProfileResult> EditUserProfile(UpdateUserProfileDto profile, long userId, IFormFile avatar, string? modifierName);
 
     #endregion
 
@@ -65,7 +65,7 @@ public interface IUserService : IAsyncDisposable
 
     #region Change User Password
 
-    Task<ChangeUserPasswordResult> ChangeUserPassword(ChangeUserPasswordDto changePassword, long userId);
+    Task<ChangeUserPasswordResult> ChangeUserPassword(ChangeUserPasswordDto changePassword, long userId, string? modifierName);
     Task<string> GetUserFullNameById(long userId);
     Task<string> GetUserMobileById(long userId);
 
@@ -75,7 +75,7 @@ public interface IUserService : IAsyncDisposable
 
     Task<FilterUserDto> FilterUsers(FilterUserDto user);
     Task<EditUserDto> GetUserForEdit(long userId);
-    Task<EditUserResult> EditUser(EditUserDto user, string editorName);
+    Task<EditUserResult> EditUser(EditUserDto user, string? modifierName);
 
     #endregion
 
@@ -86,9 +86,9 @@ public interface IUserService : IAsyncDisposable
     #region Role
 
     Task<FilterRoleDto> FilterRoles(FilterRoleDto role);
-    Task<CreateRoleResult> CreateRole(CreateRoleDto role);
+    Task<CreateRoleResult> CreateRole(CreateRoleDto role, string? creatorName);
     Task<EditRoleDto> GetRoleForEdit(long roleId);
-    Task<EditRoleResult> EditRole(EditRoleDto role, string editorName);
+    Task<EditRoleResult> EditRole(EditRoleDto role, string? modifierName);
     Task<List<Role>> GetRoles();
 
     #endregion

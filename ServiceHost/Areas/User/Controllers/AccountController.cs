@@ -55,7 +55,8 @@ namespace ServiceHost.Areas.User.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _userService.EditUserProfile(profile, User.GetUserId(), avatar);
+                var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _userService.EditUserProfile(profile, User.GetUserId(), avatar, modifierName);
 
                 switch (result)
                 {
@@ -91,7 +92,8 @@ namespace ServiceHost.Areas.User.Controllers
         {
             if (ModelState.IsValid)
             {
-                var result = await _userService.ChangeUserPassword(changePassword, User.GetUserId());
+                var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+                var result = await _userService.ChangeUserPassword(changePassword, User.GetUserId(), modifierName);
 
                 var userFullName = await _userService.GetUserFullNameById(User.GetUserId());
                 var userMobile = await _userService.GetUserMobileById(User.GetUserId());

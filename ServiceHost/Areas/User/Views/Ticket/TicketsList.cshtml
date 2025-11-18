@@ -60,7 +60,7 @@
                                                     <span class="badge bg-secondary ms-2">@ticket.TicketState.GetEnumName()</span>
                                                 </td>
                                                 <td class="align-middle text-center">
-                                                    <p class="mt-2 font-16">@ticket.CreateDate.ToStringShamsiDate()</p>
+                                                    <p class="mt-2 font-16">@ticket.CreatedAt.ToString()</p>
                                                 </td>
                                                 <td class="align-middle text-center">
                                                     <a asp-area="User" asp-controller="Ticket" asp-action="TicketDetails" asp-route-ticketId="@ticket.Id" class="btn main-color-two-bg shadow-none btn-sm text-white">

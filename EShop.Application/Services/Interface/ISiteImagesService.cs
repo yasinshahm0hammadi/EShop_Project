@@ -11,11 +11,11 @@ namespace EShop.Application.Services.Interface
 
         Task<List<Slider>> GetAllSlides();
         Task<List<Slider>> GetAllActiveSlides();
-        Task<CreateSliderResult> CreateSlide(CreateSliderDto slide, IFormFile slideImage, IFormFile slideMobileImage);
+        Task<CreateSliderResult> CreateSlide(CreateSliderDto slide, IFormFile slideImage, IFormFile slideMobileImage, string? creatorName);
         Task<EditSliderDto> GetSlideForEdit(long id);
-        Task<EditSliderResult> EditSlide(EditSliderDto silde, IFormFile slideImage, IFormFile slideMobileImage, string editorName);
-        Task<bool> ActivateSlide(long id);
-        Task<bool> DeActivateSlide(long id);
+        Task<EditSliderResult> EditSlide(EditSliderDto silde, IFormFile slideImage, IFormFile slideMobileImage, string? editorName);
+        Task<bool> ActivateSlide(long id, string? modifierName);
+        Task<bool> DeActivateSlide(long id, string? modifierName);
 
         #endregion
 
@@ -23,11 +23,11 @@ namespace EShop.Application.Services.Interface
 
         Task<List<SiteBanner>> GetSiteBannersByPlacement(SiteBannerPlacement placement);
         Task<List<SiteBanner>> GetAllBanners();
-        Task<CreateSiteBannerResult> CreateSiteBanner(CreateSiteBannerDto banner, IFormFile bannerImage);
+        Task<CreateSiteBannerResult> CreateSiteBanner(CreateSiteBannerDto banner, IFormFile bannerImage, string? creatorName);
         Task<EditSiteBannerDto> GetSiteBannerForEdit(long id);
-        Task<EditSiteBannerResult> EditSiteBanner(EditSiteBannerDto banner, IFormFile bannerImage, string editorName);
-        Task<bool> ActivateSiteBanner(long id);
-        Task<bool> DeActivateSiteBanner(long id);
+        Task<EditSiteBannerResult> EditSiteBanner(EditSiteBannerDto banner, IFormFile bannerImage, string? editorName);
+        Task<bool> ActivateSiteBanner(long id, string? modifierName);
+        Task<bool> DeActivateSiteBanner(long id, string? modifierName);
 
         #endregion
     }
