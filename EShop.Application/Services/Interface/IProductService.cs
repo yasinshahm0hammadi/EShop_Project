@@ -44,8 +44,8 @@ namespace EShop.Application.Services.Interface
 
         #region Product Feature
 
-        Task<List<FilterProductFeatureDto>> GetAllProductInAdminPanel();
-        Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, string? creatorName);
+        Task<List<FilterProductFeatureDto>> GetAllProductFeaturesInAdminPanel(long productId);
+        Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, long productId, string? creatorName);
 
         #endregion
     }

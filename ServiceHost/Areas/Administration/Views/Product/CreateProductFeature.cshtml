@@ -1,0 +1,81 @@
+﻿@model EShop.Domain.DTOs.Product.ProductFeature.CreateProductFeatureDto
+
+@{
+    ViewData["Title"] = "افزودن ویژگی برای محصول مورد نظر";
+}
+
+@* @section scripts
+{
+    <partial name="_JqueryValidators" />
+} *@
+
+<div class="nk-content nk-content-fluid">
+    <div class="container-xl wide-xl">
+        <div class="nk-content-body">
+            <div class="components-preview wide-xl mx-auto">
+                <!-- .nk-block-head -->
+                <div class="nk-block nk-block-lg">
+                    <div class="nk-block-head">
+                        <div class="nk-block-head-content">
+                            <h4 class="title nk-block-title">@ViewData["Title"]</h4>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-inner">
+                            <form asp-area="Administration" asp-controller="Product" asp-action="CreateProductFeature" method="post" id="create_product_form">
+                                <div class="row g-gs">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label">عنوان</label>
+                                            <div class="form-control-wrap">
+                                                <input id="product_feature_title_input" asp-for="FeatureTitle" type="text" class="form-control">
+                                                <span asp-validation-for="FeatureTitle" class="invalid"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-label">مقدار</label>
+                                            <div class="form-control-wrap">
+                                                <input id="product_feature_value_input" asp-for="FeatureValue" type="text" class="form-control">
+                                                <span asp-validation-for="FeatureValue" class="invalid"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <a id="add_feature_button" class="btn btn-round btn-primary" style="margin-top:30px;" title="افزودن ویژگی">
+                                                <i class="icon ni ni-plus"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <br />
+                                    <table id="default-datatable" class="table table-bordered table-striped text-center dataTable" role="grid" aria-describedby="default-datatable_info">
+                                        <thead class="bg-warning text-dark">
+                                            <tr role="row">
+                                                <th class="sorting">عنوان ویژگی</th>
+                                                <th class="sorting">مقدار ویژگی</th>
+                                                <th class="sorting">دستورات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="list_of_product_features">
+                                        </tbody>
+                                    </table>
+                                    <br />
+                                    <hr />
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-lg btn-primary">ذخیره اطلاعات</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- .nk-block -->
+            </div>
+            <!-- .components-preview -->
+        </div>
+    </div>
+</div>

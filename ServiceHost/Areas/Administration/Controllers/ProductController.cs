@@ -2,6 +2,9 @@
 using EShop.Domain.DTOs.Product;
 using EShop.Domain.DTOs.Product.ProductCategory;
 using EShop.Domain.DTOs.Product.ProductColor;
+using EShop.Domain.DTOs.Product.ProductFeature;
+using EShop.Domain.Entities.Product;
+using EShop.Domain.Entities.Site;
 using Microsoft.AspNetCore.Mvc;
 using ServiceHost.PresentationExtensions;
 
@@ -457,6 +460,51 @@ namespace ServiceHost.Areas.Administration.Controllers
         }
 
         #endregion
+
+        #endregion
+
+        #region Product Feature
+
+        [HttpGet("ProductFeatureList/{productId}")]
+        public async Task<IActionResult> FilterProductFeatures(long productId)
+        {
+            ViewBag.ProductId = productId;
+
+            var productFeatures = await _productService.GetAllProductFeaturesInAdminPanel(productId);
+
+            return View(productFeatures);
+        }
+
+        [HttpGet("CreateProductFeature/{productId}")]
+        public async Task<IActionResult> CreateProductFeature(long productId)
+        {
+            return View();
+        }
+
+        [HttpPost("CreateProductFeature/{productId}"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateProductFeature(CreateProductFeatureDto feature, long productId)
+        {
+            var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.CreateProductFeature(feature, productId, creatorName);
+
+            switch (result)
+            {
+                case CreateProductFeatureResult.Error:
+                    TempData[ErrorMessage] = "هنگام فرایند ثبت ویژگی برای محصول موردنظر خطایی رخ داد، لطفا بعدا امتحان کنید.";
+                    break;
+                case CreateProductFeatureResult.Success:
+                    TempData[SuccessMessage] = "ویژگی /ها برای محصول مورد نظر با موفقیت ثبت شد/شدند.";
+                    return RedirectToAction("FilterProductFeatures", "Product", new { area = "Administration", ProductId = productId });
+                case CreateProductFeatureResult.ProductNotFound:
+                    TempData[WarningMessage] = "محصولی با چنین مشخصاتی یافت نشد";
+                    break;
+                case CreateProductFeatureResult.DuplicateFeature:
+                    TempData[WarningMessage] = "ویژگی /ها تکراری است/هستند.";
+                    break;
+            }
+
+            return View(feature);
+        }
 
         #endregion
     }

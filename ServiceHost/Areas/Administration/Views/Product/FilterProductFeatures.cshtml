@@ -1,0 +1,103 @@
+﻿@model List<EShop.Domain.DTOs.Product.ProductFeature.FilterProductFeatureDto>
+
+@{
+    ViewData["Title"] = "لیست ویژگی های محصول موردنظر";
+}
+
+@section scripts
+{
+    <partial name="_JqueryValidators" />
+}
+
+<div class="nk-content nk-content-fluid">
+    <div class="container-xl wide-xl">
+        <div class="nk-content-body">
+            <div class="nk-block-head nk-block-head-sm">
+                <div class="nk-block-between">
+                    <div class="nk-block-head-content">
+                        <h3 class="nk-block-title page-title">@ViewData["Title"]</h3>
+                    </div>
+                    <!-- .nk-block-head-content -->
+                    <div class="nk-block-head-content">
+                        <div class="toggle-wrap nk-block-tools-toggle">
+                            <div class="toggle-expand-content">
+                                <ul class="nk-block-tools g-3">
+                                    <li class="nk-block-tools-opt">
+                                        <a asp-area="Administration" asp-controller="Product" asp-action="CreateProductFeature" asp-route-productId="@ViewBag.ProductId" class="btn btn-primary"><em class="icon ni ni-plus"></em><span>افزودن رنگ محصول</span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- .nk-block-head-content -->
+                </div>
+                <!-- .nk-block-between -->
+            </div>
+            @if (Model is not null && Model.Any())
+            {
+                <!-- .nk-block-head -->
+                <div class="nk-block">
+                    <div class="card">
+                        <div class="card-inner-group">
+                            <div class="card-inner p-0">
+                                <div class="nk-tb-list">
+                                    <div class="nk-tb-item nk-tb-head">
+                                        <div class="nk-tb-col tb-col-sm"><span>شناسه</span></div>
+                                        <div class="nk-tb-col"><span></span>عنوان</div>
+                                        <div class="nk-tb-col"><span></span>مقدار</div>
+                                        <div class="nk-tb-col"><span></span>‌‌ایجاد شده در</div>
+                                        <div class="nk-tb-col"><span>اقدام</span></div>
+                                    </div>
+                                    <!-- .nk-tb-item -->
+                                    @foreach (var productFeature in Model)
+                                    {
+                                        <div class="nk-tb-item">
+                                            <div class="nk-tb-col">
+                                                <span class="tb-sub">@productFeature.Id</span>
+                                            </div>
+                                            <div class="nk-tb-col">
+                                                <span class="tb-sub">@productFeature.FeatureTitle</span>
+                                            </div>
+                                            <div class="nk-tb-col">
+                                                <span class="tb-sub">@productFeature.FeatureValue</span>
+                                            </div>
+                                            <div class="nk-tb-col">
+                                                <span class="tb-sub">@productFeature.CreatedAt</span>
+                                            </div>
+                                            <div class="nk-tb-col nk-tb-col-tools">
+                                                <ul class="nk-tb-actions gx-1 my-n1">
+                                                    <li class="me-n1">
+                                                        <div class="dropdown">
+                                                            <a href="#" class="dropdown-toggle btn btn-icon btn-trigger" data-bs-toggle="dropdown" aria-expanded="false"><em class="icon ni ni-more-h"></em></a>
+                                                            <div class="dropdown-menu dropdown-menu-end" style="">
+                                                                <ul class="link-list-opt no-bdr">
+                                                                    <li>
+                                                                        <a asp-area="Administration"
+                                                                           asp-controller="Product"
+                                                                           asp-action="EditProductFeature"
+                                                                           asp-route-id="@productFeature.Id"><em class="icon ni ni-edit"></em><span>ویرایش</span></a>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <!-- .nk-tb-list -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="nk-block">
+                    <partial name="NoItemFound" />
+                </div>
+            }
+        </div>
+    </div>
+</div>

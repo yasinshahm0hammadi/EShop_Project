@@ -775,21 +775,23 @@ namespace EShop.Application.Services.Implementation
 
         #region Product Features
 
-        public async Task<List<FilterProductFeatureDto>> GetAllProductInAdminPanel()
+        public async Task<List<FilterProductFeatureDto>> GetAllProductFeaturesInAdminPanel(long productId)
         {
             try
             {
                 return await _productFeatureRepository
                .GetQuery()
                .Include(x => x.Product)
+               .Where(x => x.ProductId == productId)
+               .OrderByDescending(x => x.CreatedAt)
                .Select(x => new FilterProductFeatureDto
                {
                    Id = x.Id,
-                   ProductId = x.ProductId,
+                   ProductId = productId,
                    FeatureTitle = x.FeatureTitle,
                    FeatureValue = x.FeatureValue,
-               }).OrderByDescending(x => x.CreateDate)
-               .ToListAsync();
+                   CreatedAt = x.CreatedAt.ToString()
+               }).ToListAsync();
             }
             catch (Exception ex)
             {
@@ -798,18 +800,18 @@ namespace EShop.Application.Services.Implementation
                 return new List<FilterProductFeatureDto>();
             }
         }
-        public async Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, string? modifierName)
+        public async Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, long productId, string? modifierName)
         {
             try
             {
-                var product = await _productFeatureRepository.GetEntityById(feature.ProductId);
+                var product = await _productRepository.GetEntityById(productId);
 
                 if (product is null)
                 {
                     return CreateProductFeatureResult.ProductNotFound;
                 }
 
-                await AddProductFeatures(feature.ProductId, feature.ProductFeatures, modifierName);
+                await AddProductFeatures(productId, feature.ProductFeatures, modifierName);
                 await _productFeatureRepository.SaveChanges();
 
                 return CreateProductFeatureResult.Success;

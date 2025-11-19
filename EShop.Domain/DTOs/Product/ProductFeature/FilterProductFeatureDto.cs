@@ -16,6 +16,6 @@ namespace EShop.Domain.DTOs.Product.ProductFeature
         [Required(ErrorMessage = "لطفا {0} را وارد کنید")]
         public string FeatureValue { get; set; }
 
-        public string CreateDate { get; set; }
+        public string CreatedAt { get; set; }
     }
 }
