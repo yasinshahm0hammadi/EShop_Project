@@ -1,0 +1,112 @@
+﻿@using EShop.Application.Utilities
+@model List<EShop.Domain.Entities.Product.ProductGallery>
+
+@{
+    ViewData["Title"] = "لیست گالری تصاویر محصول موردنظر";
+}
+
+@section scripts
+{
+    <partial name="_AdminJqueryValidators" />
+}
+
+<div class="nk-content nk-content-fluid">
+    <div class="container-xl wide-xl">
+        <div class="nk-content-body">
+
+            <div class="nk-block-head nk-block-head-sm">
+                <div class="nk-block-between">
+                    <div class="nk-block-head-content">
+                        <h3 class="nk-block-title page-title">@ViewData["Title"]</h3>
+                    </div>
+                    <!-- .nk-block-head-content -->
+                    <div class="nk-block-head-content">
+                        <div class="toggle-wrap nk-block-tools-toggle">
+                            <div class="toggle-expand-content">
+                                <ul class="nk-block-tools g-3">
+                                    <li class="nk-block-tools-opt">
+                                        <a asp-area="Administration"
+                                           asp-controller="Product"
+                                           asp-action="CreateProductGallery"
+                                           asp-route-productId="@ViewBag.ProductId"
+                                           class=" btn btn-icon btn-primary"><em class="icon ni ni-plus"></em></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!-- .toggle-wrap -->
+                    </div>
+                    <!-- .nk-block-head-content -->
+                </div>
+                <!-- .nk-block-between -->
+            </div>
+
+            <!-- .nk-block-head -->
+            @if (Model != null && Model.Any())
+            {
+                <div class="nk-block nk-block-lg">
+                    <div class="card card-preview">
+                        <div class="card-inner">
+                            <div class="row">
+                                @foreach (var gallery in Model)
+                                {
+                                    <div class="col-lg-6">
+                                        <div class="card">
+                                            <img src="@(!string.IsNullOrWhiteSpace(gallery.ImageName) ? PathExtension.ProductGalleryOrigin + gallery.ImageName : PathExtension.NoImage)" class="card-img-top">
+                                            <div class="card-inner">
+                                                <div>
+                                                    <span class="nk-menu-text">
+                                                        تصویر @gallery.Id
+                                                        @if (gallery.IsPublished)
+                                                        {
+                                                            <span class="badge bg-success">فعال</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-danger">غیرفعال</span>
+                                                        }
+                                                        <span class="badge bg-primary">اولیت نمایش: @gallery.DisplayPriority</span>
+                                                    </span>
+                                                </div>
+                                                <div class="dropdown">
+                                                    <a href="#" class="btn btn-round btn-primary" data-bs-toggle="dropdown" aria-expanded="false"><span>اقدام</span><em class="icon ni ni-chevron-down"></em></a>
+                                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-sm mt-1" style="">
+                                                        <ul class="link-list-plain">
+                                                            <li><a asp-area="Administration" asp-controller="Product" asp-action="EditProductGallery" asp-route-productId="@gallery.Id">ویرایش</a></li>
+                                                            <li>
+                                                                @if (!gallery.IsPublished)
+                                                                {
+                                                                    <a asp-area="Administration" asp-controller="Product" asp-action="ActivateProductGallery" asp-route-productId="@gallery.Id">فعال کردن</a>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <a asp-area="Administration" asp-controller="Product" asp-action="DeActivateProductGallery" asp-route-productId="@gallery.Id">غیرفعال کردن</a>
+                                                                }
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <!-- .card-preview -->
+                    <!-- .code-block -->
+                </div>
+            }
+            else
+            {
+                <div class="nk-block">
+                    <partial name="NoItemFound" />
+                </div>
+            }
+            <!-- .nk-block -->
+        </div>
+    </div>
+</div>
+
+
+

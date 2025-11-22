@@ -76,4 +76,14 @@ public static class PathExtension
     public static string ProductCategoryThumbServer = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Content/Images/ProductCategory/Thumb/");
 
     #endregion
+
+    #region Product Galleries
+
+    public static string ProductGalleryOrigin = "/Content/Images/ProductGallery/Origin/";
+    public static string ProductGalleryOriginServer = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Content/Images/ProductGallery/Origin/");
+
+    public static string ProductGalleryThumb = "/Content/Images/ProductGallery/Thumb/";
+    public static string ProductGalleryThumbServer = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/Content/Images/ProductGallery/Thumb/");
+
+    #endregion
 }

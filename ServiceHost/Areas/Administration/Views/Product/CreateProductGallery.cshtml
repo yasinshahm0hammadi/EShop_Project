@@ -1,0 +1,58 @@
+﻿@model EShop.Domain.DTOs.Product.ProductGallery.CreateOrEditProductGalleryDto
+
+@{
+    ViewData["Title"] = "افزودن تصویر گالری جدید برای محصول موردنظر";
+}
+
+<div class="nk-content nk-content-fluid">
+    <div class="container-xl wide-xl">
+        <div class="nk-content-body">
+            <div class="components-preview wide-xl mx-auto">
+                <!-- .nk-block-head -->
+                <div class="nk-block nk-block-lg">
+                    <div class="nk-block-head">
+                        <div class="nk-block-head-content">
+                            <h4 class="title nk-block-title">@ViewData["Title"]</h4>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-inner">
+                            <form asp-area="Administration" asp-controller="Product" asp-action="CreateProductGallery" method="post" enctype="multipart/form-data" id="filter-form">
+                                <div class="row g-gs">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">تصویر گالری</label>
+                                            <div class="form-control-wrap">
+                                                <div class="form-file">
+                                                    <input asp-for="Image" name="galleryImage" id="galleryImage" type="file" class="form-file-input">
+                                                    <label class="form-file-label" for="galleryImage">انتخاب تصویر گالری</label>
+                                                    <span asp-validation-for="Image" class="invalid"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label class="form-label">اولویت نمایش</label>
+                                            <div class="form-control-wrap">
+                                                <input asp-for="DisplayPriority" type="number" class="form-control">
+                                                <span asp-validation-for="DisplayPriority" class="invalid"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <button type="submit" class="btn btn-lg btn-primary">ذخیره اطلاعات</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!-- .nk-block -->
+            </div>
+            <!-- .components-preview -->
+        </div>
+    </div>
+</div>

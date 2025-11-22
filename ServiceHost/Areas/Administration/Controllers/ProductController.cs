@@ -3,8 +3,7 @@ using EShop.Domain.DTOs.Product;
 using EShop.Domain.DTOs.Product.ProductCategory;
 using EShop.Domain.DTOs.Product.ProductColor;
 using EShop.Domain.DTOs.Product.ProductFeature;
-using EShop.Domain.Entities.Product;
-using EShop.Domain.Entities.Site;
+using EShop.Domain.DTOs.Product.ProductGallery;
 using Microsoft.AspNetCore.Mvc;
 using ServiceHost.PresentationExtensions;
 
@@ -505,6 +504,101 @@ namespace ServiceHost.Areas.Administration.Controllers
 
             return View(feature);
         }
+
+        #endregion
+
+
+        #region
+
+        #region Filter Product Galleries
+
+        [HttpGet("FilterProductGalleries/{productId}")]
+        public async Task<IActionResult> FilterProductGalleries(long productId)
+        {
+            ViewBag.ProductId = productId;
+            var productGalleries = await _productService.GetAllProductGalleries(productId);
+            return View(productGalleries);
+        }
+
+        #endregion
+
+        #region Create Product Gallery
+
+        [HttpGet("CreateProductGallery/{productId}")]
+        public async Task<IActionResult> CreateProductGallery(long productId)
+        {
+            return View();
+        }
+
+
+        [HttpPost("CreateProductGallery/{productId}"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateProductGallery(CreateOrEditProductGalleryDto newProductGallery, long productId, IFormFile galleryImage)
+        {
+            var creatorName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.CreateProductGallery(newProductGallery, productId, galleryImage, creatorName);
+
+            switch (result)
+            {
+                case CreateOrEditProductGalleryResult.Success:
+                    TempData[SuccessMessage] = "تصویر گالری محصول موردنظر با موفقیت اضافه شد.";
+                    return RedirectToAction("FilterProductGalleries", "Product", new { area = "Administration", productId });
+                case CreateOrEditProductGalleryResult.Error:
+                    TempData[ErrorMessage] = "هنگام فرایند افزودن تصویر گالری برای محصول موردنظر خطایی رخ داد،‌ لطفا بعدا تلاش کنید.";
+                    break;
+                case CreateOrEditProductGalleryResult.NotForUserProduct:
+                    TempData[WarningMessage] = "پوچ";
+                    break;
+                case CreateOrEditProductGalleryResult.ImageIsNullOrInvalid:
+                    TempData[WarningMessage] = "تصویر بارگذاری شده نامعتبر می باشد لطفا تصویر با فرمت معتبر بارگذاری کنید.";
+                    break;
+                case CreateOrEditProductGalleryResult.ProductNotFound:
+                    TempData[ErrorMessage] = "هیچ محصولی با چنین مشخصاتی یافت نشد.";
+                    break;
+            }
+
+            return View(newProductGallery);
+        }
+
+        #endregion
+
+        #region Edit Product Category
+
+        [HttpGet("EditProductGallery/{productId}")]
+        public async Task<IActionResult> EditProductGallery(long productId)
+        {
+            var productGallery = await _productService.GetProductGalleryForEdit(productId);
+            return View(productGallery);
+        }
+
+        [HttpPost("EditProductGallery/{productId}"), ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProductGallery(CreateOrEditProductGalleryDto gallery, long productId, IFormFile galleryImage)
+        {
+            var modifierName = await _userService.GetUserFullNameById(User.GetUserId());
+            var result = await _productService.EditProductGallery(gallery, productId, galleryImage, modifierName);
+
+            switch (result)
+            {
+                case CreateOrEditProductGalleryResult.Success:
+                    TempData[SuccessMessage] = "تصویر گالری محصول موردنظر با موفقیت اصلاح شد.";
+                    return RedirectToAction("FilterProductGalleries", "Product", new { area = "Administration", productId });
+                case CreateOrEditProductGalleryResult.Error:
+                    TempData[ErrorMessage] = "هنگام فرایند تصحیح تصویر گالری برای محصول موردنظر خطایی رخ داد،‌ لطفا بعدا تلاش کنید.";
+                    break;
+                case CreateOrEditProductGalleryResult.NotForUserProduct:
+                    TempData[WarningMessage] = "پوچ";
+                    break;
+                case CreateOrEditProductGalleryResult.ImageIsNullOrInvalid:
+                    TempData[WarningMessage] = "تصویر بارگذاری شده نامعتبر می باشد لطفا تصویر با فرمت معتبر بارگذاری کنید.";
+                    break;
+                case CreateOrEditProductGalleryResult.ProductNotFound:
+                    TempData[ErrorMessage] = "هیچ محصولی با چنین مشخصاتی یافت نشد.";
+                    break;
+            }
+
+            return View(gallery);
+        }
+
+        #endregion
 
         #endregion
     }

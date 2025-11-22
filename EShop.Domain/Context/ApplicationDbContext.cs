@@ -74,9 +74,15 @@ public class ApplicationDbContext : DbContext
 
     #endregion
 
-    #region
+    #region Product Feature
 
     public DbSet<ProductFeature> ProductFeatures { get; set; }
+
+    #endregion
+
+    #region Product Gallery
+
+    public DbSet<ProductGallery> ProductGalleries { get; set; }
 
     #endregion
 

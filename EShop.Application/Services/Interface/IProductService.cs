@@ -2,7 +2,9 @@
 using EShop.Domain.DTOs.Product.ProductCategory;
 using EShop.Domain.DTOs.Product.ProductColor;
 using EShop.Domain.DTOs.Product.ProductFeature;
+using EShop.Domain.DTOs.Product.ProductGallery;
 using EShop.Domain.Entities.Product;
+using Microsoft.AspNetCore.Http;
 
 namespace EShop.Application.Services.Interface
 {
@@ -46,6 +48,15 @@ namespace EShop.Application.Services.Interface
 
         Task<List<FilterProductFeatureDto>> GetAllProductFeaturesInAdminPanel(long productId);
         Task<CreateProductFeatureResult> CreateProductFeature(CreateProductFeatureDto feature, long productId, string? creatorName);
+
+        #endregion
+
+        #region Product Gallery
+
+        Task<List<ProductGallery>> GetAllProductGalleries(long productId);
+        Task<CreateOrEditProductGalleryResult> CreateProductGallery(CreateOrEditProductGalleryDto gallery, long productId, IFormFile galleryImage, string? creatorName);
+        Task<CreateOrEditProductGalleryDto> GetProductGalleryForEdit(long galleryId);
+        Task<CreateOrEditProductGalleryResult> EditProductGallery(CreateOrEditProductGalleryDto gallery, long  galleryId, IFormFile galleryImage, string? modifierName);
 
         #endregion
     }
