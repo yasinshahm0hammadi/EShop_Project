@@ -31,7 +31,7 @@ namespace ServiceHost.Areas.Administration.Controllers
         [HttpGet("FilterProducts")]
         public async Task<IActionResult> FilterProducts(FilterProductDto product)
         {
-            var products = await _productService.FilterProducts(product);
+            var products = await _productService.FilterProductsInAdminPanel(product);
             return View(products);
         }
 
@@ -464,6 +464,8 @@ namespace ServiceHost.Areas.Administration.Controllers
 
         #region Product Feature
 
+        #region Filter Product Feature
+
         [HttpGet("ProductFeatureList/{productId}")]
         public async Task<IActionResult> FilterProductFeatures(long productId)
         {
@@ -473,6 +475,11 @@ namespace ServiceHost.Areas.Administration.Controllers
 
             return View(productFeatures);
         }
+
+        #endregion
+
+        #region Create Product Feature
+
 
         [HttpGet("CreateProductFeature/{productId}")]
         public async Task<IActionResult> CreateProductFeature(long productId)
@@ -507,8 +514,9 @@ namespace ServiceHost.Areas.Administration.Controllers
 
         #endregion
 
+        #endregion
 
-        #region
+        #region Product Gallery
 
         #region Filter Product Galleries
 

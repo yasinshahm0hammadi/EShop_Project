@@ -46,7 +46,84 @@ namespace EShop.Application.Services.Implementation
 
         #region Product
 
-        public async Task<FilterProductDto> FilterProducts(FilterProductDto product)
+        public async Task<FilterProductDto> FilterProducts(FilterProductDto filterProduct)
+        {
+            var query = _productRepository
+                .GetQuery()
+                .Where(q => q.IsPublished)
+                .Include(q => q.ProductColors)
+                .Include(q => q.PruductFeatures)
+                .Include(q => q.ProductGalleries)
+                .AsQueryable();
+
+            if (query != null)
+            {
+                #region Display Order
+
+                switch (filterProduct.OrderBy)
+                {
+                    case FilterProductOrderBy.CreateDateDescending:
+                        query = query.OrderByDescending(q => q.CreatedAt);
+                        break;
+                    case FilterProductOrderBy.CreateDateAscending:
+                        query = query.OrderBy(q => q.CreatedAt);
+                        break;
+                    case FilterProductOrderBy.PriceAscending:
+                        query = query.OrderBy(q => q.Price);
+                        break;
+                    case FilterProductOrderBy.PriceDescending:
+                        query = query.OrderByDescending(q => q.Price);
+                        break;
+                    case FilterProductOrderBy.ViewCountDescending:
+                        query = query.OrderByDescending(q => q.ViewCount);
+                        break;
+                    case FilterProductOrderBy.SellCountDescending:
+                        query = query.OrderByDescending(q => q.SellCount);
+                        break;
+                    default:
+                        return new FilterProductDto();
+                }
+
+                #endregion
+
+                #region Filter By Price
+
+                var expenciveProduct = await query.OrderByDescending(q => q.Price).FirstOrDefaultAsync();
+                var cheapProduct = await query.OrderByDescending(q => q.Price).FirstOrDefaultAsync();
+
+                if (expenciveProduct is not null || cheapProduct is not null)
+                {
+                    filterProduct.FilterMaxPrice = expenciveProduct.Price;
+                    filterProduct.FilterMinPrice = cheapProduct.Price;
+                }
+
+                if (filterProduct.SelectedMinPrice is not null || filterProduct.SelectedMaxPrice is not null)
+                {
+                    query = query.Where(q => q.Price <= filterProduct.SelectedMaxPrice);
+                    query = query.Where(q => q.Price >= filterProduct.SelectedMinPrice);
+                }
+
+                #endregion
+
+                #region Pagination
+
+                var productCount = await query.CountAsync();
+
+                var pager = Pager.Build(filterProduct.PageId, productCount, filterProduct.TakeEntity,
+                    filterProduct.HowManyShowPageAfterAndBefore);
+
+                var allEntities = await query.Paging(pager).ToListAsync();
+
+                #endregion
+
+                return filterProduct.SetPaging(pager).SetProduct(allEntities);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public async Task<FilterProductDto> FilterProductsInAdminPanel(FilterProductDto product)
         {
             try
             {
@@ -83,14 +160,11 @@ namespace EShop.Application.Services.Implementation
                     case FilterProductOrderBy.PriceDescending:
                         query = query.OrderByDescending(x => x.Price);
                         break;
-                    case FilterProductOrderBy.ViewDescending:
+                    case FilterProductOrderBy.ViewCountDescending:
                         query = query.OrderByDescending(x => x.ViewCount);
                         break;
-                    case FilterProductOrderBy.SellDescending:
+                    case FilterProductOrderBy.SellCountDescending:
                         query = query.OrderByDescending(x => x.SellCount);
-                        break;
-                    case FilterProductOrderBy.SellAscending:
-                        query = query.OrderBy(x => x.SellCount);
                         break;
                     case FilterProductOrderBy.CreateDateAscending:
                         query = query.OrderBy(x => x.CreatedAt);

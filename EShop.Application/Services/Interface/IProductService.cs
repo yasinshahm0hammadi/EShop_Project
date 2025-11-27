@@ -12,7 +12,8 @@ namespace EShop.Application.Services.Interface
     {
         #region Product
 
-        Task<FilterProductDto> FilterProducts(FilterProductDto product);
+        Task<FilterProductDto> FilterProducts(FilterProductDto filterProduct);
+        Task<FilterProductDto> FilterProductsInAdminPanel(FilterProductDto product);
         Task<CreateProductResult> CreateProduct(CreateProductDto product, string? creatorName);
         Task<EditProductDto> GetProductForEdit(long id);
         Task<EditProductResult> EditProduct(EditProductDto product, string? modifierName);

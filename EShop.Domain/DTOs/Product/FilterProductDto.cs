@@ -24,8 +24,8 @@ namespace EShop.Domain.DTOs.Product
         public string Category { get; set; }
         public int FilterMinPrice { get; set; }
         public int FilterMaxPrice { get; set; }
-        public int SelectedMinPrice { get; set; }
-        public int SelectedMaxPrice { get; set; }
+        public int? SelectedMinPrice { get; set; }
+        public int? SelectedMaxPrice { get; set; }
         public int MobileSelectedMinPrice { get; set; }
         public int MobileSelectedMaxPrice { get; set; }
         public List<Entities.Product.Product> Products { get; set; }
@@ -33,7 +33,7 @@ namespace EShop.Domain.DTOs.Product
         public FilterProductOrderBy OrderBy { get; set; }
         public FilterProductOrder ProductOrder { get; set; }
         public List<long> SelectedProductCategories { get; set; }
-        //public List<Entities.Products.ProductCategory> ProductCategories { get; set; }
+        public List<Entities.Product.ProductCategory> ProductCategories { get; set; }
 
         #endregion
 
@@ -41,20 +41,20 @@ namespace EShop.Domain.DTOs.Product
 
         public FilterProductDto SetProduct(List<Entities.Product.Product> products)
         {
-            this.Products = products;
+            Products = products;
             return this;
         }
 
         public FilterProductDto SetPaging(BasePaging paging)
         {
-            this.PageId = paging.PageId;
-            this.AllEntitiesCount = paging.AllEntitiesCount;
-            this.StartPage = paging.StartPage;
-            this.EndPage = paging.EndPage;
-            this.HowManyShowPageAfterAndBefore = paging.HowManyShowPageAfterAndBefore;
-            this.TakeEntity = paging.TakeEntity;
-            this.SkipEntity = paging.SkipEntity;
-            this.PageCount = paging.PageCount;
+            PageId = paging.PageId;
+            AllEntitiesCount = paging.AllEntitiesCount;
+            StartPage = paging.StartPage;
+            EndPage = paging.EndPage;
+            HowManyShowPageAfterAndBefore = paging.HowManyShowPageAfterAndBefore;
+            TakeEntity = paging.TakeEntity;
+            SkipEntity = paging.SkipEntity;
+            PageCount = paging.PageCount;
 
             return this;
         }
@@ -86,6 +86,9 @@ namespace EShop.Domain.DTOs.Product
         [Display(Name = "جدیدترین")]
         CreateDateDescending,
 
+        [Display(Name = "قدیمی ترین")]
+        CreateDateAscending,
+
         [Display(Name = "ارزانترین")]
         PriceAscending,
 
@@ -93,16 +96,9 @@ namespace EShop.Domain.DTOs.Product
         PriceDescending,
 
         [Display(Name = "پر بازدیدترین")]
-        ViewDescending,
+        ViewCountDescending,
 
         [Display(Name = "پر فروشترین")]
-        SellDescending,
-
-        [Display(Name = "کم فروشترین")]
-        SellAscending,
-
-        [Display(Name = "منتخب")]
-        CreateDateAscending,
-
+        SellCountDescending,
     }
 }
