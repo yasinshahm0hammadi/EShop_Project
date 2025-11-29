@@ -2,7 +2,6 @@ using EShop.Application.Utilities;
 using EShop.Domain.Context;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ServiceHost.DIContainer;
 
 var builder = WebApplication.CreateBuilder(args);

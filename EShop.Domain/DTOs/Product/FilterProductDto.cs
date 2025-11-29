@@ -23,6 +23,7 @@ namespace EShop.Domain.DTOs.Product
         public string ProductBrand { get; set; }
         public string Category { get; set; }
         public int FilterMinPrice { get; set; }
+        public int ProductsCount { get; set; }
         public int FilterMaxPrice { get; set; }
         public int? SelectedMinPrice { get; set; }
         public int? SelectedMaxPrice { get; set; }

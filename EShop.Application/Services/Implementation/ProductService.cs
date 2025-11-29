@@ -89,7 +89,7 @@ namespace EShop.Application.Services.Implementation
                 #region Filter By Price
 
                 var expenciveProduct = await query.OrderByDescending(q => q.Price).FirstOrDefaultAsync();
-                var cheapProduct = await query.OrderByDescending(q => q.Price).FirstOrDefaultAsync();
+                var cheapProduct = await query.OrderBy(q => q.Price).FirstOrDefaultAsync();
 
                 if (expenciveProduct is not null || cheapProduct is not null)
                 {
@@ -103,11 +103,13 @@ namespace EShop.Application.Services.Implementation
                     query = query.Where(q => q.Price >= filterProduct.SelectedMinPrice);
                 }
 
+
                 #endregion
 
                 #region Pagination
 
                 var productCount = await query.CountAsync();
+                filterProduct.ProductsCount  = productCount;
 
                 var pager = Pager.Build(filterProduct.PageId, productCount, filterProduct.TakeEntity,
                     filterProduct.HowManyShowPageAfterAndBefore);

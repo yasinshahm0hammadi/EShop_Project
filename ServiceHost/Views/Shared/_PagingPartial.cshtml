@@ -1,27 +1,27 @@
 ﻿@model EShop.Domain.DTOs.Paging.BasePaging
 
-<div class="my-paginate mt-5">
-    <nav aria-label="Page navigation example">
-        <ul class="pagination flex-wrap justify-content-center">
-            @if (Model.StartPage < Model.PageId)
-            {
-                <li class="page-item">
-                    <a style="cursor: pointer;" class="page-link rounded-3" onclick="FillPageId(@(Model.PageId - 1))">قبلی <i class="bi bi-chevron-right"></i></a>
-                </li>
-            }
-            @for (int i = Model.StartPage; i <= Model.EndPage; i++)
-            {
-                <li style="cursor: pointer;" class="page-item @(Model.PageId == i ? "active" : "")">
-                    <a class="page-link rounded-3" onclick="FillPageId(@i)">@i</a>
-                </li>
-            }
-            @if (Model.EndPage > Model.PageId)
-            {
-                <li class="page-item">
-                    <a style="cursor: pointer;" class="page-link rounded-3" onclick="FillPageId(@(Model.PageId + 1))">بعدی <i class="bi bi-chevron-left"></i></a>
-                </li>
-            }
-        </ul>
-    </nav>
-</div>
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination flex-wrap justify-content-center">
+        @if (Model.StartPage < Model.PageId)
+        {
+            <li class="page-item">
+                <a style="cursor: pointer;" class="page-link rounded-3" onclick="FillPageId(@(Model.PageId - 1))">قبلی <i class="bi bi-chevron-right"></i></a>
+            </li>
+        }
+        @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+        {
+            <li style="cursor: pointer;" class="page-item @(Model.PageId == i ? "active" : "")">
+                <a class="page-link rounded-3" onclick="FillPageId(@i)">@i</a>
+            </li>
+        }
+        @if (Model.EndPage > Model.PageId)
+        {
+            <li class="page-item">
+                <a style="cursor: pointer;" class="page-link rounded-3" onclick="FillPageId(@(Model.PageId + 1))">بعدی <i class="bi bi-chevron-left"></i></a>
+            </li>
+        }
+    </ul>
+</nav>
+
 
